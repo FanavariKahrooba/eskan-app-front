@@ -1,11 +1,9 @@
-
-import { DynamicGridColumn, DynamicGridPinDirection } from "..";
 import { useDynamicSmartGridContext } from "../DynamicSmartGrid.context";
 
 type DynamicSmartGridHeaderMenuProps<
   TData extends Record<string, unknown> = Record<string, unknown>,
 > = {
-  column: DynamicGridColumn<TData>;
+  column: any;
   onClose?: () => void;
 };
 
@@ -29,7 +27,7 @@ export function DynamicSmartGridHeaderMenu<
     onClose?.();
   };
 
-  const pin = (direction: DynamicGridPinDirection) => {
+  const pin = (direction: any) => {
     setColumnPinning((prev) => ({
       ...prev,
       [column.id]: direction,

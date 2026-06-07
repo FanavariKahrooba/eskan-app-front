@@ -145,10 +145,10 @@ export function UsersGridAdminDemo() {
               onSelectView={(id) => alert(`select view: ${id}`)}
             />
             <DataGridExportMenu
-              items={[
-                { id: "csv", label: "CSV", onClick: () => alert("csv") },
-                { id: "excel", label: "Excel", onClick: () => alert("excel") },
-              ]}
+              // items={[
+              //   { id: "csv", label: "CSV", onClick: () => alert("csv") },
+              //   { id: "excel", label: "Excel", onClick: () => alert("excel") },
+              // ]}
             />
             <DataGridRefreshButton
               loading={loading}
@@ -236,13 +236,13 @@ export function UsersGridAdminDemo() {
           {loading ? (
             <tr>
               <td colSpan={6}>
-                <DataGridStatus loading />
+                <DataGridStatus  />
               </td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
               <td colSpan={6}>
-                <DataGridStatus empty />
+                <DataGridStatus  />
               </td>
             </tr>
           ) : (
@@ -289,7 +289,7 @@ export function UsersGridAdminDemo() {
         </DataGridBody>
       </DataGridTable>
 
-      <DataGridFooter total={rows.length} page={1} pageSize={10} />
+      {/* <DataGridFooter total={rows.length} page={1} pageSize={10} /> */}
     </DataGrid>
   );
 }

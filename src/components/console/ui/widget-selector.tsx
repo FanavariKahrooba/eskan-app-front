@@ -1,6 +1,6 @@
 "use client"
 
-import { ALL_WIDGETS } from "@/lib/menu-widgets"
+// import { ALL_WIDGETS } from "@/lib/menu-widgets"
 
 export default function WidgetSelector({ selected, setSelected }: any) {
   const toggle = (id: string) => {
@@ -16,7 +16,7 @@ export default function WidgetSelector({ selected, setSelected }: any) {
       <h3 className="font-bold mb-4">انتخاب ویجت‌ها</h3>
 
       <div className="grid grid-cols-2 gap-2">
-        {ALL_WIDGETS.map((w) => {
+        {/* {ALL_WIDGETS.map((w) => {
           const Icon = w.icon
 
           return (
@@ -31,7 +31,7 @@ export default function WidgetSelector({ selected, setSelected }: any) {
               {w.title}
             </button>
           )
-        })}
+        })} */}
       </div>
     </div>
   )

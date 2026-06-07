@@ -1,8 +1,10 @@
 import { getColumnId, resolveCellValue } from '../../utils';
 import type { GroupedRowNode } from './apply-grouping';
-import type { AggregationDefinition, AggregationType, ColumnDef } from '../../types';
-
-
+import type {
+    AggregationDefinition,
+    AggregationType,
+    ColumnDef,
+} from '../../types';
 
 export type AggregationValueMap = Record<string, unknown>;
 
@@ -46,12 +48,11 @@ const aggregateValues = (
         case 'count':
             return values.length;
 
-        case 'sum': {
-            return values.reduce((total: any, value) => {
+        case 'sum':
+            return values.reduce((total: number, value) => {
                 const numberValue = toNumber(value);
                 return numberValue === null ? total : total + numberValue;
             }, 0);
-        }
 
         case 'avg': {
             const numbers = values
@@ -119,7 +120,7 @@ const flattenAggregatedRows = <TRow>(
 const applyAggregationToNode = <TRow>(
     node: GroupedRowNode<TRow>,
     columns: Array<ColumnDef<TRow>>,
-    aggregations: Array<AggregationDefinition[]>,
+    aggregations: AggregationDefinition[],
 ): AggregatedRowNode<TRow> => {
     const children = node.children?.map((child) =>
         applyAggregationToNode(child, columns, aggregations),
@@ -135,23 +136,29 @@ const applyAggregationToNode = <TRow>(
     const aggregationValues: AggregationValueMap = {};
 
     for (const aggregation of aggregations) {
-        const column = columns.find((item) => getColumnId(item) === aggregation.columnId);
+        const column = columns.find(
+            (item) => getColumnId(item) === aggregation.columnId,
+        );
 
         if (!column) {
             continue;
         }
 
-        const values = node.leafRows.map((row, index) => {
-            return resolveCellValue({
+        const values = node.leafRows.map((row, index) =>
+            resolveCellValue({
                 row,
                 rowIndex: index,
                 column,
-            });
-        });
+            }),
+        );
 
-        const aggregationId = aggregation.id ?? `${aggregation.columnId}.${aggregation.type}`;
+        const aggregationId =
+            aggregation.id ?? `${aggregation.columnId}.${aggregation.type}`;
 
-        aggregationValues[aggregationId] = aggregateValues(values, aggregation.type);
+        aggregationValues[aggregationId] = aggregateValues(
+            values,
+            aggregation.type,
+        );
     }
 
     return {
@@ -166,7 +173,7 @@ export const applyAggregation = <TRow = unknown>(
 ): ApplyAggregationResult<TRow> => {
     const { groupedRows, columns, aggregations = [] } = options;
 
-    if (!aggregations?.length) {
+    if (!aggregations.length) {
         const rows = groupedRows as Array<AggregatedRowNode<TRow>>;
 
         return {

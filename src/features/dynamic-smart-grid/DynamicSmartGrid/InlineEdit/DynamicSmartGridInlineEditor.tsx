@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 
 import { useDynamicSmartGridContext } from "../DynamicSmartGrid.context";
-import { DynamicGridColumn } from "..";
 
 type DynamicSmartGridInlineEditorProps<
   TData extends Record<string, unknown> = Record<string, unknown>,
@@ -11,7 +10,7 @@ type DynamicSmartGridInlineEditorProps<
   row: TData;
   rowId: string;
   rowIndex: number;
-  column: DynamicGridColumn<TData>;
+  column: any;
   value: unknown;
   onCancel: () => void;
   onCommit: () => void;

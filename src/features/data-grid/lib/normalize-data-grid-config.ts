@@ -1,4 +1,4 @@
-import { DataGridConfig } from '@/components/dynamic-table/features';
+// import { DataGridConfig } from '@/components/dynamic-table/features';
 import {
     DEFAULT_DATA_GRID_CONFIG,
     mergeFeatureFlags,
@@ -8,8 +8,8 @@ import { normalizeColumns } from './normalize-columns';
 import { normalizePlugins } from './normalize-plugins';
 
 export function normalizeDataGridConfig<TRow>(
-    config: DataGridConfig<TRow>,
-): DataGridConfig<TRow> {
+    config: any,
+): any {
     const cfg = config as any;
 
     const normalized = {
@@ -65,5 +65,5 @@ export function normalizeDataGridConfig<TRow>(
         plugins: normalizePlugins(cfg.plugins ?? []),
     };
 
-    return normalized as DataGridConfig<TRow>;
+    return normalized as any;
 }

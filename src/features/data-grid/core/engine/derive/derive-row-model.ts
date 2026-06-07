@@ -48,7 +48,9 @@ export function deriveRowModel<TRow = unknown>(
     const rowMap = new Map<string, DerivedRow<TRow>>();
 
     rows.forEach((row, index) => {
-        const id = getRowId(row, index, customGetRowId);
+        const id = getRowId(row, index, {
+            getRowId: customGetRowId,
+        });
 
         const cells: Record<string, DerivedCell<TRow>> = {};
 
@@ -60,7 +62,11 @@ export function deriveRowModel<TRow = unknown>(
                 columnId,
                 row,
                 column,
-                value: resolveCellValue(row, column),
+                value: resolveCellValue({
+                    row,
+                    rowIndex: index,
+                    column,
+                }),
             };
         }
 

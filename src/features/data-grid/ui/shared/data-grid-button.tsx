@@ -17,6 +17,7 @@ export interface DataGridButtonProps extends HTMLMotionProps<"button"> {
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   loading?: boolean;
+  children: any;
 }
 
 const variantClass: Record<DataGridButtonVariant, string> = {

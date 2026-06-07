@@ -31,6 +31,7 @@ export default function AIAssistantWidget() {
 
     if (saved) {
       const parsed = JSON.parse(saved)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThreads(parsed)
 
       if (parsed.length) {

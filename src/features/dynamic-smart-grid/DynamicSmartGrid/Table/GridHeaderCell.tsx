@@ -1,12 +1,12 @@
 import { useMemo, useRef, useState } from "react";
 import type { DragEvent, MouseEvent as ReactMouseEvent } from "react";
-import type { DynamicGridColumn } from "../DynamicSmartGrid.types";
+// import type { DynamicGridColumn } from "../DynamicSmartGrid.types";
 import { useDynamicSmartGridContext } from "../DynamicSmartGrid.context";
 
 type GridHeaderCellProps<
   TData extends Record<string, unknown> = Record<string, unknown>,
 > = {
-  column: DynamicGridColumn<TData>;
+  column: any;
 };
 
 export function GridHeaderCell<
@@ -25,7 +25,7 @@ export function GridHeaderCell<
     reorderColumn,
     columnPinning,
     getPinnedStyle,
-  } = grid;
+  }: any = grid;
 
   const resizeStartRef = useRef<{
     startX: number;
@@ -35,7 +35,7 @@ export function GridHeaderCell<
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const activeSort = useMemo(() => {
-    return sorting.find((sort) => sort.columnId === column.id);
+    return sorting.find((sort: any) => sort.columnId === column.id);
   }, [sorting, column.id]);
 
   const canSort = props.enableSorting && column.enableSorting !== false;
@@ -77,7 +77,7 @@ export function GridHeaderCell<
         ),
       );
 
-      setColumnWidths((prev) => ({
+      setColumnWidths((prev: any) => ({
         ...prev,
         [column.id]: nextWidth,
       }));
@@ -183,7 +183,7 @@ export function GridHeaderCell<
           <input
             value={columnFilters[column.id] ?? ""}
             onChange={(event) => {
-              setColumnFilters((prev) => ({
+              setColumnFilters((prev: any) => ({
                 ...prev,
                 [column.id]: event.target.value,
               }));

@@ -67,6 +67,7 @@ export function createFilterSlice(
                 filters: {
                     items: [...defaults.filters.items],
                     logicOperator: defaults.filters.logicOperator,
+                    search: defaults.filters.search,
                 },
             });
         },

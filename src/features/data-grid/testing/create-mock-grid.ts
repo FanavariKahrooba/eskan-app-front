@@ -1,4 +1,3 @@
-import { DataGridConfig } from '@/components/dynamic-table/features';
 import { createDefaultTableState } from '../lib';
 import { mockColumns } from './fixtures/mock-columns';
 import { mockRows, type MockUserRow } from './fixtures/mock-rows';
@@ -33,7 +32,7 @@ function createRows(count: number): MockUserRow[] {
 
 export function createMockGrid(
     options: CreateMockGridOptions = {},
-): DataGridConfig<MockUserRow> {
+): any {
     const { rowCount = mockRows.length, initialState } = options;
 
     return {

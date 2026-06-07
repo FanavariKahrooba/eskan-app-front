@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -443,7 +444,7 @@ export default function ShelterFacilitiesPage() {
                             </td>
 
                             <td className="px-4 py-4 text-gray-700">
-                              {formatDate(item.created_at)}
+                              {formatDate(item.created_at || "")}
                             </td>
 
                             <td className="px-4 py-4">

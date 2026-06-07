@@ -1,8 +1,9 @@
 "use client";
 import { useMemo, useState } from "react";
 import { DynamicSmartGrid } from "../DynamicSmartGrid";
-import type { DynamicGridColumn } from "../DynamicSmartGrid.types";
+// import type { DynamicGridColumn } from "../DynamicSmartGrid.types";
 import "../DynamicSmartGrid.css";
+// import { DynamicGridColumn } from "..";
 
 type DemoOrder = {
   id: number;
@@ -65,7 +66,7 @@ const initialRows: DemoOrder[] = [
 export function DynamicSmartGridDemo() {
   const [rows, setRows] = useState<DemoOrder[]>(initialRows);
 
-  const columns = useMemo<DynamicGridColumn<DemoOrder>[]>(
+  const columns = useMemo<any[]>(
     () => [
       {
         id: "id",
@@ -95,7 +96,7 @@ export function DynamicSmartGridDemo() {
         header: "وضعیت",
         accessorKey: "status",
         width: 140,
-        cell: ({ value }) => {
+        cell: ({ value }: any) => {
           const status = value as DemoOrder["status"];
 
           const label =
@@ -105,7 +106,9 @@ export function DynamicSmartGridDemo() {
                 ? "در انتظار"
                 : "لغو شده";
 
-          return <span className={`demo-status demo-status-${status}`}>{label}</span>;
+          return (
+            <span className={`demo-status demo-status-${status}`}>{label}</span>
+          );
         },
       },
       {
@@ -115,7 +118,7 @@ export function DynamicSmartGridDemo() {
         width: 160,
         align: "left",
         editVariant: "number",
-        cell: ({ value }) =>
+        cell: ({ value }: any) =>
           `${Number(value ?? 0).toLocaleString("fa-IR")} تومان`,
       },
       {
@@ -132,12 +135,12 @@ export function DynamicSmartGridDemo() {
         align: "center",
       },
     ],
-    []
+    [],
   );
 
   return (
     <div dir="rtl" style={{ padding: 24 }}>
-      <DynamicSmartGrid<DemoOrder>
+      {/* <DynamicSmartGrid<DemoOrder>
         title="سفارش‌ها"
         subtitle="نمونه استفاده از Dynamic Smart Grid"
         data={rows}
@@ -181,13 +184,13 @@ export function DynamicSmartGridDemo() {
                 [columnId]:
                   columnId === "amount" ? Number(nextValue) : nextValue,
               };
-            })
+            }),
           );
         }}
         onRowClick={(row) => {
           console.log("row clicked", row);
         }}
-      />
+      /> */}
     </div>
   );
 }

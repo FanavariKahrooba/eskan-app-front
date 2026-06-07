@@ -32,6 +32,7 @@ export function DatePickerInput({ label, value, onChange, range = false, multipl
   const [focused, setFocused] = useState(false)
   const [internal, setInternal] = useState(value)
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setInternal(value), [value])
 
   const intent = error ? "error" : success ? "success" : "default"

@@ -40,14 +40,17 @@ export function DropdownMenuTrigger({
   children: React.ReactNode;
   asChild?: boolean;
 }) {
-  const { open, setOpen } = useDropdown();
+  const { setOpen } = useDropdown();
 
-  const handleClick = () => {
+  const handleClick: React.MouseEventHandler = () => {
     setOpen((prev) => !prev);
   };
 
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement, {
+  if (
+    asChild &&
+    React.isValidElement<{ onClick?: React.MouseEventHandler }>(children)
+  ) {
+    return React.cloneElement(children, {
       onClick: handleClick,
     });
   }
@@ -58,7 +61,6 @@ export function DropdownMenuTrigger({
     </button>
   );
 }
-
 /* ================= CONTENT ================= */
 
 export function DropdownMenuContent({

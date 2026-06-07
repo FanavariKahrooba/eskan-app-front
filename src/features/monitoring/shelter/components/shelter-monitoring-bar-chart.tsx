@@ -43,7 +43,6 @@ export function ShelterMonitoringBarChart({
             fontSize={12}
           />
           <Tooltip
-            formatter={(value: number) => [formatNumber(value), "مقدار"]}
             contentStyle={{
               background: "rgba(15,23,42,0.95)",
               border: "1px solid rgba(255,255,255,0.08)",

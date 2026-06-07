@@ -31,7 +31,10 @@ import {
   toPersianDigits,
   yesNo,
 } from "../utils/neighborhood-hall-formatters";
-import { SectionCard, StatCard } from "@/features/shelter/components/shelter-shared";
+import {
+  SectionCard,
+  StatCard,
+} from "@/features/shelter/components/shelter-shared";
 
 const PAGE_KEY = "neighborhood-hall-detail";
 const APP_BASE_PATH = "/console";
@@ -68,7 +71,7 @@ const emptyDetail: NeighborhoodHallDetail = {
   created_at: "",
   updated_at: "",
   district: null,
-  region: null,
+  // region: null,
   user: null,
   info: null,
   image: "",
@@ -130,6 +133,7 @@ export default function NeighborhoodHallDetailPage({ id }: Props) {
   }, [id]);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadDetail();
   }, [loadDetail]);
 
@@ -178,7 +182,7 @@ export default function NeighborhoodHallDetailPage({ id }: Props) {
               audit.track({
                 type: "neighborhood_hall.detail.refreshed",
                 message: `Neighborhood hall detail refreshed: ${id}`,
-                entityId: String(id),
+                // entityId: String(id),
               });
               loadDetail();
             },
@@ -242,7 +246,7 @@ export default function NeighborhoodHallDetailPage({ id }: Props) {
             </span>
 
             <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
-              مدیر: {detail.user?.name || "-"}
+              {/* مدیر: {detail.user?.name || "-"} */}
             </span>
 
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
@@ -297,14 +301,15 @@ export default function NeighborhoodHallDetailPage({ id }: Props) {
             />
             <StatCard
               title="مدیر سرا"
-              value={detail.user?.name || "-"}
+              // value={detail.user?.name || "-"}
+              value={"-"}
               description="کاربر منتسب به سرا"
               icon={<Users size={20} />}
               tone="emerald"
             />
             <StatCard
               title="شماره تماس"
-              value={detail.phone || detail.user?.phone_number || "-"}
+              value={detail.phone || "-"}
               description="تلفن تماس سرا یا مدیر"
               icon={<Phone size={20} />}
               tone="amber"
@@ -335,11 +340,11 @@ export default function NeighborhoodHallDetailPage({ id }: Props) {
                     label: "آخرین بروزرسانی",
                     value: formatDate(detail.updated_at),
                   },
-                  { label: "مدیر سرا", value: detail.user?.name || "-" },
-                  {
-                    label: "شماره مدیر",
-                    value: detail.user?.phone_number || "-",
-                  },
+                  // { label: "مدیر سرا", value: detail.user?.name || "-" },
+                  // {
+                  //   label: "شماره مدیر",
+                  //   value: detail.user?.phone || "-",
+                  // },
                   { label: "تلفن سرا", value: detail.phone || "-" },
                 ]}
               />
@@ -352,7 +357,7 @@ export default function NeighborhoodHallDetailPage({ id }: Props) {
               <InfoGrid
                 items={[
                   { label: "ناحیه", value: detail.district?.name || "-" },
-                  { label: "منطقه", value: detail.region?.name || "-" },
+                  // { label: "منطقه", value: detail.region?.name || "-" },
                   { label: "عرض جغرافیایی", value: detail.lat || "-" },
                   { label: "طول جغرافیایی", value: detail.lng || "-" },
                   { label: "آدرس سایت", value: detail.site_address || "-" },

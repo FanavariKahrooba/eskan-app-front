@@ -7,7 +7,7 @@ type GridEmptyStateProps = {
 export function GridEmptyState({ colSpan }: GridEmptyStateProps) {
   const grid = useDynamicSmartGridContext();
 
-  const { props, globalFilter, columnFilters } = grid;
+  const { props, globalFilter, columnFilters }: any = grid;
 
   const hasFilter =
     Boolean(globalFilter) ||

@@ -1,18 +1,18 @@
-'use client';
+"use client";
 import type { ReactNode, TdHTMLAttributes } from "react";
 
-export interface DataGridCellProps extends Omit<
-  TdHTMLAttributes<HTMLTableCellElement>,
-  "children"
-> {
-  children?: ReactNode;
-  align?: "start" | "center" | "end";
-  width?: number | string;
-  minWidth?: number | string;
-  pinned?: "left" | "right" | false;
-  muted?: boolean;
-}
-const alignClass = {
+// export interface DataGridCellProps extends Omit<
+//   TdHTMLAttributes<HTMLTableCellElement>,
+//   "children"
+// > {
+//   children?: ReactNode;
+//   align?: "start" | "center" | "end";
+//   width?: number | string;
+//   minWidth?: number | string;
+//   pinned?: "left" | "right" | false;
+//   muted?: boolean;
+// }
+const alignClass: any = {
   start: "text-start",
   center: "text-center",
   end: "text-end",
@@ -27,7 +27,7 @@ export function DataGridCell({
   muted,
   className = "",
   title,
-}: DataGridCellProps) {
+}: any) {
   return (
     <td
       title={title}

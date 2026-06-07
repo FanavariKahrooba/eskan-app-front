@@ -29,7 +29,8 @@ import {
   formatEmploymentType,
   toPersianDigits,
 } from "../utils/neighborhood-hall-formatters";
-import { SectionCard, StatCard } from "../components/neighborhood-hall-shared";
+import { SectionCard, StatCard } from "@/features/shelter/components/shelter-shared";
+// import { SectionCard, StatCard } from "../components/neighborhood-hall-shared";
 
 const APP_BASE_PATH = "/console";
 
@@ -178,10 +179,12 @@ export default function NeighborhoodHallEmployeesPage({
   }, [kind, page, search]);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPositions();
   }, [loadPositions]);
 
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadEmployees();
   }, [loadEmployees]);
 
@@ -244,7 +247,7 @@ export default function NeighborhoodHallEmployeesPage({
         first_name: form.first_name.trim(),
         last_name: form.last_name.trim(),
         phone_number: form.phone_number.trim(),
-        email: form.email.trim() || null,
+        email: form.email.trim() || "",
         nh_position_id: Number(form.nh_position_id),
         neighborhood_hall_id: neighborhoodHallId,
         employment_type: form.employment_type,
@@ -255,14 +258,14 @@ export default function NeighborhoodHallEmployeesPage({
         audit.track({
           type: "neighborhood_hall.employee.updated",
           message: `Employee updated: ${form.id}`,
-          entityId: String(form.id),
+          // entityId: String(form.id),
         });
       } else {
         await neighborhoodHallApi.employees.create(payload);
         audit.track({
           type: "neighborhood_hall.employee.created",
           message: `Employee created for hall: ${neighborhoodHallId}`,
-          entityId: String(neighborhoodHallId),
+          // entityId: String(neighborhoodHallId),
         });
       }
 
@@ -285,7 +288,7 @@ export default function NeighborhoodHallEmployeesPage({
         audit.track({
           type: "neighborhood_hall.employee.deleted",
           message: `Employee deleted: ${item.id}`,
-          entityId: String(item.id),
+          // entityId: String(item.id),
         });
         await loadEmployees();
       } catch (err) {
@@ -298,7 +301,7 @@ export default function NeighborhoodHallEmployeesPage({
   const rowPadding =
     density === "compact"
       ? "px-4 py-2"
-      : density === "spacious"
+      : density == "comfortable"
         ? "px-4 py-5"
         : "px-4 py-3";
 

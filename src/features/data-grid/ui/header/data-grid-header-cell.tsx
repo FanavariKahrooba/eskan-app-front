@@ -6,27 +6,27 @@ import { DataGridIcon } from "../shared";
 
 export type DataGridSortDirection = "asc" | "desc" | false;
 
-export interface DataGridHeaderCellProps extends Omit<
-  ThHTMLAttributes<HTMLTableCellElement>,
-  "children"
-> {
-  id?: string;
-  label?: ReactNode;
-  children?: ReactNode;
-  description?: ReactNode;
-  width?: number | string;
-  minWidth?: number | string;
-  align?: "start" | "center" | "end";
-  sortable?: boolean;
-  sortDirection?: DataGridSortDirection;
-  resizable?: boolean;
-  pinned?: "left" | "right" | false;
-  selected?: boolean;
-  onSort?: () => void;
-  onResizeStart?: MouseEventHandler<HTMLDivElement>;
-}
+// export interface DataGridHeaderCellProps extends Omit<
+//   ThHTMLAttributes<HTMLTableCellElement>,
+//   "children"
+// > {
+//   id?: string;
+//   label?: ReactNode;
+//   children?: ReactNode;
+//   description?: ReactNode;
+//   width?: number | string;
+//   minWidth?: number | string;
+//   align?: "start" | "center" | "end";
+//   sortable?: boolean;
+//   sortDirection?: DataGridSortDirection;
+//   resizable?: boolean;
+//   pinned?: "left" | "right" | false;
+//   selected?: boolean;
+//   onSort?: () => void;
+//   onResizeStart?: MouseEventHandler<HTMLDivElement>;
+// }
 
-const alignClass = {
+const alignClass: any = {
   start: "text-start justify-start",
   center: "text-center justify-center",
   end: "text-end justify-end",
@@ -48,7 +48,7 @@ export function DataGridHeaderCell({
   onSort,
   onResizeStart,
   ...props
-}: DataGridHeaderCellProps) {
+}: any) {
   const content = label ?? children;
 
   const contentNode = sortable ? (

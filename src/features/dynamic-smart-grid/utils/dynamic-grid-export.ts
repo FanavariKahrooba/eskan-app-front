@@ -1,4 +1,4 @@
-import type { DynamicGridColumn } from "../DynamicSmartGrid";
+// import type { DynamicGridColumn } from "../DynamicSmartGrid";
 import { getCellValue, stringifyCellValue } from "./dynamic-grid-helpers";
 
 function downloadFile(filename: string, content: string, mimeType: string) {
@@ -23,18 +23,18 @@ function escapeCsvValue(value: string) {
 
 export function exportRowsToCsv<TData extends Record<string, any>>(params: {
     rows: TData[];
-    columns: DynamicGridColumn<TData>[];
+    columns: any;
     filename?: string;
 }) {
     const { rows, columns, filename = "grid-export.csv" } = params;
 
-    const headers = columns.map((column) =>
+    const headers = columns.map((column: any) =>
         escapeCsvValue(stringifyCellValue(column.header))
     );
 
     const lines = rows.map((row) => {
         return columns
-            .map((column) => {
+            .map((column: any) => {
                 const value = column.exportValue
                     ? column.exportValue(row)
                     : getCellValue(row, column);
@@ -51,7 +51,7 @@ export function exportRowsToCsv<TData extends Record<string, any>>(params: {
 
 export function exportRowsToJson<TData extends Record<string, any>>(params: {
     rows: TData[];
-    columns: DynamicGridColumn<TData>[];
+    columns: any[];
     filename?: string;
 }) {
     const { rows, columns, filename = "grid-export.json" } = params;

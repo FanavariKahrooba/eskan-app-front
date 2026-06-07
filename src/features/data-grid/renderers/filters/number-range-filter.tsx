@@ -163,7 +163,7 @@ export function NumberRangeFilter<TRow = unknown>({
 
   validate,
 }: NumberRangeFilterProps<TRow>) {
-  const rangeValue = normalizeNumberRangeValue(value);
+  const rangeValue: any = normalizeNumberRangeValue(value);
   const outputValue = normalizeOutputValue(rangeValue, emptyAsNull);
 
   const validationError = (() => {

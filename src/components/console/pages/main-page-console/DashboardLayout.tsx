@@ -840,9 +840,7 @@ export default function DashboardLayout() {
                       مرکز برتر سراها
                     </div>
                     <div className="mt-2 text-sm font-black text-slate-900">
-                      {topHall?.name ||
-                        topHall?.title ||
-                        "داده‌ای ثبت نشده است"}
+                      {topHall?.name || "داده‌ای ثبت نشده است"}
                     </div>
                   </div>
 
@@ -851,9 +849,7 @@ export default function DashboardLayout() {
                       مرکز حساس اسکان
                     </div>
                     <div className="mt-2 text-sm font-black text-slate-900">
-                      {topShelter?.name ||
-                        topShelter?.title ||
-                        "داده‌ای ثبت نشده است"}
+                      {topShelter?.name || "داده‌ای ثبت نشده است"}
                     </div>
                   </div>
                 </div>

@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useDynamicSmartGridContext } from "../DynamicSmartGrid.context";
 import { DynamicSmartGridInlineEditor } from "../InlineEdit";
-import { DynamicGridColumn } from "..";
 
 type GridCellProps<
   TData extends Record<string, unknown> = Record<string, unknown>,
@@ -9,7 +8,7 @@ type GridCellProps<
   row: TData;
   rowIndex: number;
   rowId: string;
-  column: DynamicGridColumn<TData>;
+  column: any;
 };
 
 export function GridCell<

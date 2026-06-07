@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import localFont from "next/font/local";
+import ThemeProvider from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "سامانه اسکان سرای محله",
@@ -38,7 +39,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextTopLoader color="oklch(0.606 0.25 292.717)" height={4} />
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
 
       <Script

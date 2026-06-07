@@ -3,7 +3,7 @@ import { useDynamicSmartGridContext } from "../DynamicSmartGrid.context";
 export function GridLoadingState() {
   const grid = useDynamicSmartGridContext();
 
-  const { visibleColumns, props } = grid;
+  const { visibleColumns, props }: any = grid;
 
   const fakeRows = Array.from({
     length: props.loadingRowCount ?? 8,
@@ -27,7 +27,7 @@ export function GridLoadingState() {
                 </th>
               )}
 
-              {visibleColumns.map((column) => (
+              {visibleColumns.map((column: any) => (
                 <th key={column.id} className="dsg-th">
                   <span className="dsg-skeleton dsg-skeleton-title" />
                 </th>
@@ -50,7 +50,7 @@ export function GridLoadingState() {
                   </td>
                 )}
 
-                {visibleColumns.map((column, columnIndex) => (
+                {visibleColumns.map((column: any, columnIndex: any) => (
                   <td
                     key={`loading-cell-${rowIndex}-${column.id}`}
                     className="dsg-td"

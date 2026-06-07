@@ -18,11 +18,13 @@ export function createDefaultTableStoreState(): TableStoreState {
         filters: {
             items: [],
             logicOperator: 'and',
+            search: ''
         },
         pagination: {
             pageIndex: 0,
             pageSize: 10,
             total: 0,
+            page: 0
         },
         rowEditing: {
             activeCell: null,

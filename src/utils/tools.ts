@@ -25,24 +25,6 @@ export function focusOnErrorPath(errorPath?: string | number) {
   }
 }
 
-// export function ImageResolver(input: string) {
-
-//   if (!input) {
-//     return ``;
-
-//   }
-//   return process.env.NEXT_PUBLIC_BACKEND_URL + input;
-
-//   // return input?.startsWith("/storage/")
-//   //   ? input
-//   //   : `${process.env.NEXT_PUBLIC_BACKEND_URL}${input}`;
-
-
-//   // return process.env.NEXT_PUBLIC_BACKEND_URL + input;
-//   // //  return input?.startsWith("/storage/")
-//   // //               ? process.env.NEXT_PUBLIC_BACKEND_URL + input
-//   // //               : input
-// }
 export function ImageResolver(input: string) {
   if (!input) return "/assets/img/teams/avatar.jpg";
 

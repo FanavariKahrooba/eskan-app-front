@@ -16,7 +16,7 @@ import FAQSectionView from "./new/FAQSectionView";
 export default function HomePage() {
   return (
     <main
-      className="min-h-screen overflow-hidden bg-zinc-950 text-white"
+      className="min-h-screen overflow-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white"
       dir="rtl"
     >
       <div className="pointer-events-none fixed inset-0 z-0">

@@ -1,6 +1,4 @@
 import type {
-    DynamicGridColumn,
-    DynamicGridPinDirection,
     DynamicGridRowId,
 } from "../DynamicSmartGrid";
 
@@ -9,26 +7,26 @@ export function clampNumber(value: number, min: number, max: number) {
 }
 
 export function getColumnInitialWidth<TData extends Record<string, any>>(
-    column: DynamicGridColumn<TData>
+    column: any
 ) {
     return column.width ?? 160;
 }
 
 export function getColumnMinWidth<TData extends Record<string, any>>(
-    column: DynamicGridColumn<TData>
+    column: any
 ) {
     return column.minWidth ?? 80;
 }
 
 export function getColumnMaxWidth<TData extends Record<string, any>>(
-    column: DynamicGridColumn<TData>
+    column: any
 ) {
     return column.maxWidth ?? 600;
 }
 
 export function getCellValue<TData extends Record<string, any>>(
     row: TData,
-    column: DynamicGridColumn<TData>
+    column: any
 ) {
     if (column.accessorFn) return column.accessorFn(row);
     if (column.accessorKey) return row[column.accessorKey];
@@ -50,8 +48,8 @@ export function reorderArray<T>(items: T[], sourceIndex: number, targetIndex: nu
 }
 
 export function getPinnedColumns<TData extends Record<string, any>>(
-    columns: DynamicGridColumn<TData>[],
-    pinning: Record<string, DynamicGridPinDirection>
+    columns: any[],
+    pinning: Record<string, any>
 ) {
     const left = columns.filter((col) => pinning[col.id] === "left");
     const center = columns.filter((col) => !pinning[col.id]);

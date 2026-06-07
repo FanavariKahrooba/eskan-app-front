@@ -273,8 +273,8 @@ export function UltimateDataGridDemo() {
       document.body.style.userSelect = "";
     };
 
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
+    // document.body.style.cursor = "col-resize";
+    // document.body.style.userSelect = "none";
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
@@ -396,9 +396,9 @@ export function UltimateDataGridDemo() {
       <div className="overflow-x-auto">
         <DataGridTable
           className={rowPaddingClass}
-          style={{
-            minWidth: tableMinWidth,
-          }}
+          // style={{
+          //   minWidth: tableMinWidth,
+          // }}
         >
           <DataGridHeader>
             <DataGridHeaderRow>

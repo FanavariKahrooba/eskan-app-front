@@ -26,9 +26,9 @@ export function usePageFavorites(page: string) {
     }, [favorites, page]);
 
     const toggleFavorite = () => {
-        setFavorites((prev) => {
+        setFavorites((prev: string[]) => {
             const next = prev.includes(page)
-                ? prev.filter((item) => item !== page)
+                ? prev.filter((item: string) => item !== page)
                 : [...prev, page];
 
             localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

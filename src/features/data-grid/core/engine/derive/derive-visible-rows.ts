@@ -20,6 +20,9 @@ import {
     applySorting,
 } from '../pipeline';
 
+import type { ApplyAggregationResult } from '../pipeline/apply-aggregation';
+import type { ApplyGroupingResult } from '../pipeline/apply-grouping';
+
 import {
     deriveRowModel,
     type DerivedRow,
@@ -38,8 +41,8 @@ export interface VisibleRowsModel<TRow = unknown> {
     derivedRows: Array<DerivedRow<TRow>>;
     totalRows: number;
     totalPages: number;
-    groupedRows?: unknown[];
-    aggregatedRows?: unknown[];
+    groupedRows?: ApplyGroupingResult<TRow>;
+    aggregatedRows?: ApplyAggregationResult<TRow>;
 }
 
 export interface DeriveVisibleRowsOptions<TRow = unknown> {
@@ -76,50 +79,50 @@ export function deriveVisibleRows<TRow = unknown>(
     const searchedRows = applySearch({
         rows,
         columns,
-        search: filter?.search ?? '',
+        filterState: filter,
     });
 
     const filteredRows = applyFilters({
         rows: searchedRows,
         columns,
-        filters: filter?.items ?? [],
+        filterState: filter,
     });
 
     const sortedRows = applySorting({
         rows: filteredRows,
         columns,
-        sorting: sort?.items ?? [],
+        sortState: sort,
     });
 
     const rowSelectionResult = applyRowSelection({
         rows: sortedRows,
-        selectedRowIds: rowSelection?.selectedRowIds ?? {},
+        rowSelectionState: rowSelection,
         getRowId,
     });
 
-    const selectedRows = rowSelectionResult.rows;
+    const selectedRows = rowSelectionResult.selectedRows;
 
     const rowExpansionResult = applyRowExpansion({
         rows: selectedRows,
-        expandedRowIds: rowDetails?.expandedRowIds ?? {},
+        rowDetailsState: rowDetails,
         getRowId,
     });
 
-    const expandedRows = rowExpansionResult.rows;
+    const expandedRows = rowExpansionResult.rows.map((item) => item.row);
 
-    let groupedRows: unknown[] | undefined;
-    let aggregatedRows: unknown[] | undefined;
+    let groupedRows: ApplyGroupingResult<TRow> | undefined;
+    let aggregatedRows: ApplyAggregationResult<TRow> | undefined;
 
     if (grouping?.columnIds?.length) {
         groupedRows = applyGrouping({
             rows: expandedRows,
             columns,
-            grouping,
+            groupingState: grouping,
         });
 
         if (aggregation?.items?.length) {
             aggregatedRows = applyAggregation({
-                groupedRows,
+                groupedRows: groupedRows.rows,
                 columns,
                 aggregations: aggregation.items,
             });
@@ -128,7 +131,7 @@ export function deriveVisibleRows<TRow = unknown>(
 
     const paginationResult = applyPagination({
         rows: expandedRows,
-        pagination: pagination ?? {
+        paginationState: pagination ?? {
             page: 1,
             pageSize: expandedRows.length || 1,
         },
@@ -155,7 +158,7 @@ export function deriveVisibleRows<TRow = unknown>(
         rowModel,
         derivedRows: rowModel.rows,
         totalRows: expandedRows.length,
-        totalPages: paginationResult.totalPages,
+        totalPages: paginationResult.pageCount,
         groupedRows,
         aggregatedRows,
     };

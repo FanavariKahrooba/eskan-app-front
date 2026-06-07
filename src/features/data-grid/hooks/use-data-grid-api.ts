@@ -1,99 +1,272 @@
-"use client"
-import { useCallback, useMemo } from 'react';
+"use client";
+
+import { useCallback, useMemo } from "react";
 
 import type {
     DataGridApi,
     DataGridTableInstance,
-} from '../core/types';
+} from "../core/types";
+import type {
+    ColumnDef,
+    ColumnPinningState,
+    ColumnSizingState,
+    ColumnVisibilityState,
+    DataGridState,
+    FilterState,
+    PaginationState,
+    RowEditingState,
+    RowSelectionState,
+} from "../core/types";
 
 export function useDataGridApi(
     instance: DataGridTableInstance,
 ): DataGridApi {
     const store = instance.store;
 
-    const getState = useCallback(() => store.getState(), [store]);
+    const getState = useCallback<DataGridApi["getState"]>(
+        () => store.getState() as unknown as DataGridState,
+        [store],
+    );
 
     const api = useMemo<DataGridApi>(
         () => ({
             getState,
 
-            setSearchQuery(query) {
-                store.getState().setSearchQuery(query);
+            setState(partialState) {
+                const state = store.getState() as any;
+                if (typeof state.setState === "function") {
+                    state.setState(partialState);
+                }
             },
 
-            clearSearch() {
-                store.getState().clearSearch();
+            resetState() {
+                const state = store.getState() as any;
+                if (typeof state.resetState === "function") {
+                    state.resetState();
+                    return;
+                }
+
+                state.resetColumnOrder?.();
+                state.resetColumnPinning?.();
+                state.resetColumnSizing?.();
+                state.resetColumnVisibility?.();
+                state.resetFilters?.();
+                state.resetPagination?.();
+                state.clearEditingDrafts?.();
+                state.resetRowExpansion?.();
+                state.resetRowSelection?.();
+                state.resetSearch?.();
+                state.resetSorting?.();
+                state.resetToolbar?.();
+                state.resetViewPresets?.();
             },
 
-            setSorting(sortModel) {
-                store.getState().setSorting(sortModel);
+            getRows() {
+                const state = store.getState() as any;
+                return state.rows ?? state.data ?? [];
             },
 
-            toggleSort(columnId) {
-                store.getState().toggleSort(columnId);
+            getVisibleRows() {
+                const state = store.getState() as any;
+                return state.visibleRows ?? state.rows ?? state.data ?? [];
+            },
+
+            getSelectedRows() {
+                const state = store.getState() as any;
+                const rows = state.rows ?? state.data ?? [];
+                const selection = state.rowSelection ?? {};
+
+                return rows.filter((row: any, index: number) => {
+                    const rowId = this.getRowId(row, index);
+                    return !!selection[rowId];
+                });
+            },
+
+            getRowId(row, index) {
+                const anyInstance = instance as any;
+
+                if (typeof anyInstance.getRowId === "function") {
+                    return anyInstance.getRowId(row, index);
+                }
+
+                if (typeof row === "object" && row !== null && "id" in (row as any)) {
+                    return String((row as any).id);
+                }
+
+                return String(index);
+            },
+
+            getRowById(rowId) {
+                const rows = this.getRows();
+                return rows.find((row, index) => this.getRowId(row, index) === rowId);
+            },
+
+            getColumns() {
+                const state = store.getState() as any;
+                return state.columns ?? [];
+            },
+
+            getLeafColumns() {
+                const state = store.getState() as any;
+                return state.leafColumns ?? state.columns ?? [];
+            },
+
+            getColumn(columnId) {
+                return this.getLeafColumns().find((col: any) => col.id === columnId);
+            },
+
+            setColumns(columns: Array<ColumnDef<any>>) {
+                const state = store.getState() as any;
+                state.setColumns?.(columns);
+            },
+
+            setSorting(sorting) {
+                store.getState().setSorting(sorting);
             },
 
             clearSorting() {
                 store.getState().clearSorting();
             },
 
-            setFilters(filters) {
-                store.getState().setFilters(filters);
+            setFilters(filters: FilterState) {
+                const state = store.getState() as any;
+                state.setFilters(filters.items);
             },
 
-            addFilter(filter) {
-                store.getState().addFilter(filter);
+            clearFilters(columnId?: string) {
+                const state = store.getState() as any;
+
+                if (columnId) {
+                    state.removeFilter?.(columnId);
+                    return;
+                }
+
+                state.clearFilters();
             },
 
-            removeFilter(filterId) {
-                store.getState().removeFilter(filterId);
+            setSearch(query: string) {
+                store.getState().setSearchQuery(query);
             },
 
-            clearFilters() {
-                store.getState().clearFilters();
+            setPagination(pagination: PaginationState) {
+                const state = store.getState() as any;
+                state.setPage?.(pagination.pageIndex);
+                state.setPageSize?.(pagination.pageSize);
             },
 
-            setPage(pageIndex) {
+            setPageIndex(pageIndex: number) {
                 store.getState().setPage(pageIndex);
             },
 
-            setPageSize(pageSize) {
+            setPageSize(pageSize: number) {
                 store.getState().setPageSize(pageSize);
             },
 
-            setColumnVisibility(columnId, visible) {
-                store.getState().setColumnVisibility(columnId, visible);
+            setColumnVisibility(visibility: ColumnVisibilityState) {
+                const state = store.getState() as any;
+
+                Object.entries(visibility).forEach(([columnId, visible]) => {
+                    state.setColumnVisibility(columnId, visible);
+                });
             },
 
-            toggleColumnVisibility(columnId) {
-                store.getState().toggleColumnVisibility(columnId);
+            showColumn(columnId: string) {
+                const state = store.getState() as any;
+                state.setColumnVisibility(columnId, true);
             },
 
-            setColumnOrder(columnIds) {
-                store.getState().setColumnOrder(columnIds);
+            hideColumn(columnId: string) {
+                const state = store.getState() as any;
+                state.setColumnVisibility(columnId, false);
             },
 
-            pinColumn(columnId, side) {
-                store.getState().pinColumn(columnId, side);
+            toggleColumnVisibility(columnId: string) {
+                const state = store.getState() as any;
+                const current = state.columnVisibility?.[columnId] ?? true;
+                state.setColumnVisibility(columnId, !current);
             },
 
-            unpinColumn(columnId) {
-                store.getState().unpinColumn(columnId);
+            setColumnPinning(pinning: ColumnPinningState) {
+                const state = store.getState() as any;
+                state.setColumnPinning?.(pinning);
             },
 
-            setColumnSize(columnId, size) {
+            pinColumn(columnId: string, position: "left" | "right") {
+                const state = store.getState() as any;
+                const current = state.columnPinning ?? { left: [], right: [] };
+
+                const left = (current.left ?? []).filter((id: string) => id !== columnId);
+                const right = (current.right ?? []).filter((id: string) => id !== columnId);
+
+                if (position === "left") {
+                    state.setColumnPinning?.({
+                        left: [...left, columnId],
+                        right,
+                    });
+                    return;
+                }
+
+                state.setColumnPinning?.({
+                    left,
+                    right: [...right, columnId],
+                });
+            },
+
+            unpinColumn(columnId: string) {
+                const state = store.getState() as any;
+
+                if (typeof state.unpinColumn === "function") {
+                    state.unpinColumn(columnId);
+                    return;
+                }
+
+                const current = state.columnPinning ?? { left: [], right: [] };
+
+                state.setColumnPinning?.({
+                    left: (current.left ?? []).filter((id: string) => id !== columnId),
+                    right: (current.right ?? []).filter((id: string) => id !== columnId),
+                });
+            },
+
+            setColumnSizing(sizing: ColumnSizingState) {
+                const state = store.getState() as any;
+
+                Object.entries(sizing).forEach(([columnId, size]) => {
+                    state.setColumnSize?.(columnId, size);
+                });
+            },
+
+            setColumnSize(columnId: string, size: number) {
                 store.getState().setColumnSize(columnId, size);
             },
 
-            selectRow(rowId) {
+            resetColumnSize(columnId?: string) {
+                const state = store.getState() as any;
+
+                if (typeof state.resetColumnSize === "function") {
+                    state.resetColumnSize(columnId);
+                    return;
+                }
+
+                if (typeof state.resetColumnSizing === "function") {
+                    state.resetColumnSizing();
+                }
+            },
+
+            setRowSelection(selection: RowSelectionState) {
+                const state = store.getState() as any;
+                state.setRowSelection?.(selection);
+            },
+
+            selectRow(rowId: string) {
                 store.getState().selectRow(rowId);
             },
 
-            deselectRow(rowId) {
+            deselectRow(rowId: string) {
                 store.getState().deselectRow(rowId);
             },
 
-            toggleRowSelection(rowId) {
+            toggleRowSelection(rowId: string) {
                 store.getState().toggleRowSelection(rowId);
             },
 
@@ -101,27 +274,104 @@ export function useDataGridApi(
                 store.getState().clearRowSelection();
             },
 
-            expandRow(rowId) {
+            setRowEditing(editing: RowEditingState) {
+                const state = store.getState() as any;
+                state.setRowEditing?.(editing);
+            },
+
+            startRowEdit(rowId: string) {
+                const state = store.getState() as any;
+                state.startRowEdit?.(rowId);
+            },
+
+            stopRowEdit(rowId: string) {
+                const state = store.getState() as any;
+                state.stopRowEdit?.(rowId);
+            },
+
+            startCellEdit(rowId: string, columnId: string) {
+                const state = store.getState() as any;
+                state.beginEditCell(rowId, columnId);
+            },
+
+            stopCellEdit() {
+                const state = store.getState() as any;
+                state.commitEditingCell?.();
+            },
+
+            expandRow(rowId: string) {
                 store.getState().expandRow(rowId);
             },
 
-            collapseRow(rowId) {
+            collapseRow(rowId: string) {
                 store.getState().collapseRow(rowId);
             },
 
-            toggleRowExpansion(rowId) {
-                store.getState().toggleRowExpansion(rowId);
+            toggleRowExpanded(rowId: string) {
+                const state = store.getState() as any;
+                const expanded = !!state.rowExpansion?.[rowId];
+
+                if (expanded) {
+                    state.collapseRow(rowId);
+                } else {
+                    state.expandRow(rowId);
+                }
+            },
+
+            refresh() {
+                const state = store.getState() as any;
+                return state.refresh?.();
+            },
+
+            setSearchQuery(query: string) {
+                store.getState().setSearchQuery(query);
+            },
+
+            clearSearch() {
+                store.getState().clearSearch();
+            },
+
+            toggleSort(columnId: string) {
+                store.getState().toggleSort(columnId);
+            },
+
+            addFilter(filter) {
+                store.getState().addFilter(filter);
+            },
+
+            removeFilter(filterId: string) {
+                store.getState().removeFilter(filterId);
+            },
+
+            setPage(pageIndex: number) {
+                store.getState().setPage(pageIndex);
+            },
+
+            setColumnOrder(columnIds: string[]) {
+                store.getState().setColumnOrder(columnIds);
+            },
+
+            toggleRowExpansion(rowId: string) {
+                const state = store.getState() as any;
+                const expanded = !!state.rowExpansion?.[rowId];
+
+                if (expanded) {
+                    state.collapseRow(rowId);
+                } else {
+                    state.expandRow(rowId);
+                }
             },
 
             clearRowExpansion() {
-                store.getState().clearRowExpansion();
+                const state = store.getState() as any;
+                state.resetRowExpansion?.();
             },
 
-            beginEditCell(rowId, columnId, initialValue) {
+            beginEditCell(rowId: string, columnId: string, initialValue?: unknown) {
                 store.getState().beginEditCell(rowId, columnId, initialValue);
             },
 
-            setEditingValue(rowId, columnId, value) {
+            setEditingValue(rowId: string, columnId: string, value: unknown) {
                 store.getState().setEditingValue(rowId, columnId, value);
             },
 
@@ -133,45 +383,45 @@ export function useDataGridApi(
                 store.getState().cancelEditingCell();
             },
 
-            setDensity(density) {
+            setDensity(density: "sm" | "md" | "lg") {
                 store.getState().setDensity(density);
             },
 
-            setFullscreen(fullscreen) {
+            setFullscreen(fullscreen: boolean) {
                 store.getState().setFullscreen(fullscreen);
             },
 
-            setColumnManagerOpen(open) {
+            setColumnManagerOpen(open: boolean) {
                 store.getState().setColumnManagerOpen(open);
             },
 
-            applyViewPreset(presetId) {
+            applyViewPreset(presetId: string) {
                 store.getState().applyViewPreset(presetId);
             },
 
-            setActiveViewPreset(presetId) {
+            setActiveViewPreset(presetId: string | null) {
                 store.getState().setActiveViewPreset(presetId);
             },
 
             resetAll() {
-                const state = store.getState();
+                const state = store.getState() as any;
 
-                state.resetColumnOrder();
-                state.resetColumnPinning();
-                state.resetColumnSizing();
-                state.resetColumnVisibility();
-                state.resetFilters();
-                state.resetPagination();
-                state.clearEditingDrafts();
-                state.resetRowExpansion();
-                state.resetRowSelection();
-                state.resetSearch();
-                state.resetSorting();
-                state.resetToolbar();
-                state.resetViewPresets();
+                state.resetColumnOrder?.();
+                state.resetColumnPinning?.();
+                state.resetColumnSizing?.();
+                state.resetColumnVisibility?.();
+                state.resetFilters?.();
+                state.resetPagination?.();
+                state.clearEditingDrafts?.();
+                state.resetRowExpansion?.();
+                state.resetRowSelection?.();
+                state.resetSearch?.();
+                state.resetSorting?.();
+                state.resetToolbar?.();
+                state.resetViewPresets?.();
             },
         }),
-        [getState, store],
+        [getState, instance, store],
     );
 
     return api;

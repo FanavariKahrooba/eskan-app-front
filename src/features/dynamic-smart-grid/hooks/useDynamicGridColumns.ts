@@ -9,10 +9,10 @@ import {
     getPinnedColumns,
     reorderArray,
 } from "../utils/dynamic-grid-helpers";
-import { DynamicGridColumn, DynamicGridPinDirection } from "../DynamicSmartGrid";
+// import { DynamicGridColumn, DynamicGridPinDirection } from "../DynamicSmartGrid";
 
 export function useDynamicGridColumns<TData extends Record<string, any>>(
-    rawColumns: DynamicGridColumn<TData>[]
+    rawColumns: any[]
 ) {
     const [orderedColumnIds, setOrderedColumnIds] = useState<string[]>(() =>
         rawColumns.map((column) => column.id)
@@ -41,9 +41,9 @@ export function useDynamicGridColumns<TData extends Record<string, any>>(
     );
 
     const [columnPinning, setColumnPinning] = useState<
-        Record<string, DynamicGridPinDirection>
+        Record<string, any>
     >(() => {
-        const initial: Record<string, DynamicGridPinDirection> = {};
+        const initial: Record<string, any> = {};
 
         rawColumns.forEach((column) => {
             initial[column.id] = column.pinned ?? false;
@@ -57,7 +57,7 @@ export function useDynamicGridColumns<TData extends Record<string, any>>(
 
         const known = orderedColumnIds
             .map((id) => map.get(id))
-            .filter(Boolean) as DynamicGridColumn<TData>[];
+            .filter(Boolean) as any[];
 
         const missing = rawColumns.filter(
             (column) => !orderedColumnIds.includes(column.id)

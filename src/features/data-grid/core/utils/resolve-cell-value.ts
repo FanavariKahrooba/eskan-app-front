@@ -13,7 +13,7 @@ export const resolveCellValue = <TRow = unknown>(
     const { row, rowIndex, column } = context;
 
     if (typeof column.accessorFn === 'function') {
-        return column.accessorFn(row, rowIndex);
+        return column.accessorFn(row);
     }
 
     if (typeof column.accessorKey === 'string' && column.accessorKey.length > 0) {

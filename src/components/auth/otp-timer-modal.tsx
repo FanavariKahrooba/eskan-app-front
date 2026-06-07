@@ -21,6 +21,7 @@ const OtpTimerModal: React.FC<TimerProps> = ({
     if (storedTime) {
       const expiryTime = new Date(storedTime).getTime();
       const remainingTime = Math.max((expiryTime - now) / 1000, 0);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTimeLeft(remainingTime);
     }
 

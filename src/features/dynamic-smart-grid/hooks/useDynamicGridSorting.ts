@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { getCellValue } from "../utils/dynamic-grid-helpers";
-import { DynamicGridColumn, DynamicGridSortItem } from "../DynamicSmartGrid";
+// import { DynamicGridColumn, DynamicGridSortItem } from "../DynamicSmartGrid";
 
 function compareValues(a: any, b: any) {
     if (a === b) return 0;
@@ -29,10 +29,10 @@ function compareValues(a: any, b: any) {
 
 export function useDynamicGridSorting<TData extends Record<string, any>>(
     rows: TData[],
-    columns: DynamicGridColumn<TData>[],
+    columns: any[],
     enableMultiSort?: boolean
 ) {
-    const [sorting, setSorting] = useState<DynamicGridSortItem[]>([]);
+    const [sorting, setSorting] = useState<any[]>([]);
 
     const sortedRows = useMemo(() => {
         if (!sorting.length) return rows;
@@ -67,7 +67,7 @@ export function useDynamicGridSorting<TData extends Record<string, any>>(
             const shouldMulti = Boolean(enableMultiSort && multi);
 
             if (!existing) {
-                const next: DynamicGridSortItem = {
+                const next: any = {
                     id: columnId,
                     direction: "asc",
                 };

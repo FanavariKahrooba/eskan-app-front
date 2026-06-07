@@ -57,7 +57,7 @@ export default function QuickActions({ actions }: QuickActionsProps) {
           variantClassMap[variant],
         ].join(" ");
 
-        const motionProps = {
+        const motionProps: any = {
           variants: {
             hidden: { opacity: 0, y: -4 },
             show: { opacity: 1, y: 0 },

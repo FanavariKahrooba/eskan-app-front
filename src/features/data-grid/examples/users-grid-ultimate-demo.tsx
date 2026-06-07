@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
@@ -446,12 +447,12 @@ export function UsersGridUltimateDemo() {
         icon: <DataGridIcon name="eye" size={16} />,
         onClick: () => alert(`مشاهده کاربر: ${row.name}`),
       },
-      {
-        id: `edit-${row.id}`,
-        label: "ویرایش",
-        icon: <DataGridIcon name="edit" size={16} />,
-        onClick: () => alert(`ویرایش کاربر: ${row.name}`),
-      },
+      // {
+      //   id: `edit-${row.id}`,
+      //   label: "ویرایش",
+      //   icon: <DataGridIcon name="edit" size={16} />,
+      //   onClick: () => alert(`ویرایش کاربر: ${row.name}`),
+      // },
       {
         id: `mail-${row.id}`,
         label: "ارسال ایمیل",
@@ -558,7 +559,7 @@ export function UsersGridUltimateDemo() {
                 onResetView={handleResetAll}
               />
 
-              <DataGridExportMenu
+              {/* <DataGridExportMenu
                 items={[
                   {
                     id: "csv",
@@ -576,7 +577,7 @@ export function UsersGridUltimateDemo() {
                     onClick: () => alert("Export PDF"),
                   },
                 ]}
-              />
+              /> */}
 
               <DataGridRefreshButton
                 onRefresh={handleRefresh}
@@ -879,7 +880,7 @@ export function UsersGridUltimateDemo() {
             {loading || error || paginatedRows.length === 0 ? (
               <tr>
                 <td colSpan={visibleColumns.length}>
-                  <DataGridStatus
+                  {/* <DataGridStatus
                     loading={loading}
                     error={error}
                     empty={!loading && !error && paginatedRows.length === 0}
@@ -889,7 +890,7 @@ export function UsersGridUltimateDemo() {
                     emptyDescription="فیلترها را تغییر بده یا داده جدید اضافه کن."
                     errorTitle="خطا در بارگذاری کاربران"
                     errorDescription={error ?? ""}
-                  />
+                  /> */}
                 </td>
               </tr>
             ) : (
@@ -1068,13 +1069,13 @@ export function UsersGridUltimateDemo() {
           </DataGridBody>
         </DataGridTable>
 
-        <DataGridFooter
+        {/* <DataGridFooter
           total={filteredRows.length}
           page={1}
           pageSize={8}
           onPageChange={(page) => alert(`go to page: ${page}`)}
           onPageSizeChange={(size) => alert(`page size: ${size}`)}
-        />
+        /> */}
       </DataGrid>
     </div>
   );

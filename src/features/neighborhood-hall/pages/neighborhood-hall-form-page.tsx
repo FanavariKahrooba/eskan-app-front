@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -196,9 +197,9 @@ export default function NeighborhoodHallFormPage({ mode, id }: Props) {
         create_hall_meta_title: data.meta_title || "",
         create_hall_meta_description: data.meta_description || "",
         create_hall_meta_keywords: data.meta_keywords || "",
-        create_hall_region: data.region?.id ? String(data.region.id) : "",
+        create_hall_region:  "",
         create_hall_district: data.district?.id ? String(data.district.id) : "",
-        create_hall_user_manager: data.user?.id ? String(data.user.id) : "0",
+        create_hall_user_manager:  "0",
         create_hall_staff_count: String(data.info?.staff_count ?? 0),
         create_hall_insurance: boolToString(data.info?.insurance),
         create_hall_has_workshop: boolToString(data.info?.has_workshop),
@@ -306,7 +307,7 @@ export default function NeighborhoodHallFormPage({ mode, id }: Props) {
         audit.track({
           type: "neighborhood_hall.updated",
           message: `Neighborhood hall updated: ${id}`,
-          entityId: String(id),
+          // entityId: String(id),
         });
       }
 

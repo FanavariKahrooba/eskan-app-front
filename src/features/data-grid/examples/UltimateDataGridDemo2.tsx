@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -495,8 +496,8 @@ export function UltimateDataGridDemo2() {
       document.body.style.cursor = "";
     };
 
-    document.body.style.userSelect = "none";
-    document.body.style.cursor = "col-resize";
+    // document.body.style.userSelect = "none";
+    // document.body.style.cursor = "col-resize";
 
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
@@ -794,7 +795,7 @@ export function UltimateDataGridDemo2() {
         <div ref={tableWrapperRef} className="overflow-x-auto rounded-2xl">
           <DataGridTable
             className={rowPaddingClass}
-            style={{ minWidth: tableMinWidth }}
+            // style={{ minWidth: tableMinWidth }}
           >
             <DataGridHeader className="sticky top-0 z-10 bg-white">
               <DataGridHeaderRow>

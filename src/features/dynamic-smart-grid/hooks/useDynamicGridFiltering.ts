@@ -1,6 +1,6 @@
 'use client'
 import { useMemo, useState } from "react";
-import type { DynamicGridColumn } from "../DynamicSmartGrid";
+// import type { DynamicGridColumn } from "../DynamicSmartGrid";
 import { getCellValue } from "../utils/dynamic-grid-helpers";
 
 function normalizeValue(value: unknown) {
@@ -29,7 +29,7 @@ function includesText(value: unknown, search: string) {
 
 export function useDynamicGridFiltering<TData extends Record<string, any>>(
     rows?: TData[],
-    columns?: DynamicGridColumn<TData>[]
+    columns?: any[]
 ) {
     const safeRows = Array.isArray(rows) ? rows : [];
     const safeColumns = Array.isArray(columns) ? columns : [];

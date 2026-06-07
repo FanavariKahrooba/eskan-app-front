@@ -3,6 +3,7 @@ import type {
     ColumnPinningState,
     ColumnSizingState,
     ColumnVisibilityState,
+    FilterItem,
     FilterState,
     PaginationState,
     RowDetailsState,
@@ -37,9 +38,9 @@ export interface TableStoreState {
     rowEditing: InlineEditingState;
     rowExpansion: RowDetailsState;
     rowSelection: RowSelectionState;
-    search: SearchState;
-    sorting: SortingState;
-    toolbar: ToolbarState;
+    search: any;
+    sorting: any;
+    toolbar: any;
     viewPresets: ViewPreset[];
     activeViewPresetId: string | null;
 }
@@ -121,15 +122,15 @@ export interface SearchSlice {
 }
 
 export interface SortingSlice {
-    setSorting: (sorting: SortingState['sortModel']) => void;
+    setSorting: (sorting: any) => void;
     toggleSort: (columnId: string) => void;
     clearSorting: () => void;
     resetSorting: () => void;
 }
 
 export interface ToolbarSlice {
-    setToolbarState: (toolbar: Partial<ToolbarState>) => void;
-    setDensity: (density: ToolbarState['density']) => void;
+    setToolbarState: (toolbar: any) => void;
+    setDensity: (density: any) => void;
     setFullscreen: (fullscreen: boolean) => void;
     setColumnManagerOpen: (open: boolean) => void;
     resetToolbar: () => void;
@@ -160,7 +161,9 @@ export interface TableStoreActions
     ToolbarSlice,
     ViewPresetSlice { }
 
-export interface TableStore extends TableStoreState, TableStoreActions { }
+export interface TableStore extends TableStoreState, TableStoreActions {
+    addFilter(filter: FilterItem): unknown;
+}
 
 export interface TableStoreInitialState extends Partial<TableStoreState> { }
 

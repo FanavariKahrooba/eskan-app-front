@@ -2,10 +2,11 @@
 
 import { ReactNode } from "react";
 import { motion } from "framer-motion";
-import Breadcrumb from "@/components/console/layout/breadcrumb";
+// import Breadcrumb from "@/components/console/layout/breadcrumb";
 import FavoriteButton from "@/components/console/layout/favorite-button";
 import QuickActions from "./quick-actions";
 import type { PageShellAction, PageShellBreadcrumbItem } from "./page-shell";
+import Breadcrumb from "../layout/breadcrumb";
 
 interface PageHeaderProps {
   title: string;
@@ -51,8 +52,8 @@ export default function PageHeader({
               {!!breadcrumbs.length && (
                 <div className="mb-2">
                   <Breadcrumb
-                    items={breadcrumbs}
-                    currentPath={currentPath}
+                    items={breadcrumbs} 
+                    currentPath={currentPath || ""}
                     maxWidth="100%"
                   />
                 </div>

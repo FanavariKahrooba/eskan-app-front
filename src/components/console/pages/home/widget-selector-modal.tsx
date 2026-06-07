@@ -1,23 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ALL_WIDGETS } from "@/lib/menu-widgets"
-import { X, Search } from "lucide-react"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+// import { ALL_WIDGETS } from "@/lib/menu-widgets"
+import { X, Search } from "lucide-react";
 
-export default function WidgetSelectorModal({ open, onClose, selected = [], setSelected }: any) {
-  const [search, setSearch] = useState("")
+export default function WidgetSelectorModal({
+  open,
+  onClose,
+  selected = [],
+  setSelected,
+}: any) {
+  const [search, setSearch] = useState("");
 
   const toggle = (id: string) => {
     if (selected.includes(id)) {
-      setSelected(selected.filter((x: string) => x !== id))
+      setSelected(selected.filter((x: string) => x !== id));
     } else {
-      setSelected([...selected, id])
+      setSelected([...selected, id]);
     }
-  }
+  };
 
-  const filtered = ALL_WIDGETS.filter((w) => w.title.toLowerCase().includes(search.toLowerCase()))
-
+  // const filtered = ALL_WIDGETS.filter((w) => w.title.toLowerCase().includes(search.toLowerCase()))
+  const filtered: any = [];
   return (
     <AnimatePresence>
       {open && (
@@ -48,15 +53,20 @@ export default function WidgetSelectorModal({ open, onClose, selected = [], setS
             <div className="flex items-center gap-2 border rounded-lg px-3 py-2 mb-4">
               <Search size={16} />
 
-              <input placeholder="جستجوی ویجت..." className="outline-none w-full text-sm" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <input
+                placeholder="جستجوی ویجت..."
+                className="outline-none w-full text-sm"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
 
             {/* widgets */}
 
             <div className="grid grid-cols-3 gap-3 overflow-y-auto max-h-[50vh]">
-              {filtered.map((w) => {
-                const Icon = w.icon
-                const active = selected.includes(w.id)
+              {filtered.map((w: any) => {
+                const Icon = w.icon;
+                const active = selected.includes(w.id);
 
                 return (
                   <motion.button
@@ -74,14 +84,17 @@ export default function WidgetSelectorModal({ open, onClose, selected = [], setS
 
                     {w.title}
                   </motion.button>
-                )
+                );
               })}
             </div>
 
             {/* footer */}
 
             <div className="flex justify-end mt-6">
-              <button onClick={onClose} className="bg-black text-white px-4 py-2 rounded-lg text-sm">
+              <button
+                onClick={onClose}
+                className="bg-black text-white px-4 py-2 rounded-lg text-sm"
+              >
                 تایید
               </button>
             </div>
@@ -89,5 +102,5 @@ export default function WidgetSelectorModal({ open, onClose, selected = [], setS
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }

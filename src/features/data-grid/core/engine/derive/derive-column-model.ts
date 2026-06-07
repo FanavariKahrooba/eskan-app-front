@@ -57,17 +57,17 @@ export function deriveColumnModel<TRow = unknown>(
 
     const orderedRawColumns = applyColumnOrder({
         columns,
-        orderedColumnIds: columnOrder?.orderedColumnIds ?? [],
+        columnOrderState: columnOrder,
     });
 
     const visibleRawColumns = applyColumnVisibility({
         columns: orderedRawColumns,
-        visibility: columnVisibility?.visibility ?? {},
+        columnVisibilityState: columnVisibility,
     });
 
     const pinnedRawColumns = applyColumnPinning({
         columns: visibleRawColumns,
-        pinning: columnPinning ?? {
+        columnPinningState: columnPinning ?? {
             left: [],
             right: [],
         },
@@ -94,7 +94,7 @@ export function deriveColumnModel<TRow = unknown>(
                 column.visible !== false &&
                 columnVisibility?.visibility?.[id] !== false,
             pinned: pinnedMap.get(id) ?? false,
-            width: getColumnWidth(column, columnSizing?.sizes?.[id]),
+            width: columnSizing?.sizes?.[id] ?? getColumnWidth(column),
         };
     });
 
@@ -106,23 +106,23 @@ export function deriveColumnModel<TRow = unknown>(
 
     const orderedColumns = orderedRawColumns
         .map((column) => columnMap.get(getColumnId(column)))
-        .filter(Boolean) as Array<DerivedColumn<TRow>>;
+        .filter((column): column is DerivedColumn<TRow> => Boolean(column));
 
     const visibleColumns = visibleRawColumns
         .map((column) => columnMap.get(getColumnId(column)))
-        .filter(Boolean) as Array<DerivedColumn<TRow>>;
+        .filter((column): column is DerivedColumn<TRow> => Boolean(column));
 
     const leftPinnedColumns = pinnedRawColumns.left
         .map((column) => columnMap.get(getColumnId(column)))
-        .filter(Boolean) as Array<DerivedColumn<TRow>>;
+        .filter((column): column is DerivedColumn<TRow> => Boolean(column));
 
     const centerColumns = pinnedRawColumns.center
         .map((column) => columnMap.get(getColumnId(column)))
-        .filter(Boolean) as Array<DerivedColumn<TRow>>;
+        .filter((column): column is DerivedColumn<TRow> => Boolean(column));
 
     const rightPinnedColumns = pinnedRawColumns.right
         .map((column) => columnMap.get(getColumnId(column)))
-        .filter(Boolean) as Array<DerivedColumn<TRow>>;
+        .filter((column): column is DerivedColumn<TRow> => Boolean(column));
 
     return {
         allColumns,

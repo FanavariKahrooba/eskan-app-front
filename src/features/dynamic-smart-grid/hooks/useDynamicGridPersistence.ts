@@ -2,8 +2,6 @@
 import { useEffect } from "react";
 import {
     DynamicGridDensity,
-    DynamicGridPinDirection,
-    DynamicGridSortItem,
 } from "../DynamicSmartGrid";
 
 import {
@@ -16,9 +14,9 @@ export interface DynamicGridPersistedState {
     orderedColumnIds?: string[];
     columnWidths?: Record<string, number>;
     columnVisibility?: Record<string, boolean>;
-    columnPinning?: Record<string, DynamicGridPinDirection>;
+    columnPinning?: Record<string, any>;
     density?: DynamicGridDensity;
-    sorting?: DynamicGridSortItem[];
+    sorting?: any[];
 }
 
 export function getDynamicGridPersistedState(key?: string) {

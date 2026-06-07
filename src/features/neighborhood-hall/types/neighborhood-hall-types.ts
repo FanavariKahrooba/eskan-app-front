@@ -158,6 +158,22 @@ export type NeighborhoodHallFormPayload = {
     meta_description?: string;
     meta_keywords?: string;
     staffCount?: number | string;
+    create_hall_meta_title: string;
+    create_hall_meta_description: string;
+    create_hall_meta_keywords: string;
+    create_hall_site_address: string;
+    create_hall_staff_count: any;
+    create_hall_insurance: any;
+
+    create_hall_has_workshop: any;
+    create_hall_area_land: any;
+    create_hall_area_building: any;
+    create_hall_has_study_hall: any;
+    create_hall_has_theater: any;
+    create_hall_theater_capacity: any;
+    create_hall_has_gym: any;
+    create_hall_has_preschool: any;
+    create_hall_contact_number: any;
     insurance?: string;
     hasWorkshop?: "0" | "1" | boolean;
     areaLand?: number | string;

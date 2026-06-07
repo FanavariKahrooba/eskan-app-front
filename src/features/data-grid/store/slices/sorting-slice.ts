@@ -20,7 +20,7 @@ export function createSortingSlice(
         toggleSort(columnId) {
             api.setState((prev) => {
                 const current = prev.sorting.sortModel;
-                const existing = current.find((item) => item.columnId === columnId);
+                const existing = current.find((item: any) => item.columnId === columnId);
 
                 if (!existing) {
                     return {
@@ -38,7 +38,7 @@ export function createSortingSlice(
                 if (existing.direction === 'asc') {
                     return {
                         sorting: {
-                            sortModel: current.map((item) =>
+                            sortModel: current.map((item: any) =>
                                 item.columnId === columnId
                                     ? {
                                         ...item,
@@ -52,7 +52,7 @@ export function createSortingSlice(
 
                 return {
                     sorting: {
-                        sortModel: current.filter((item) => item.columnId !== columnId),
+                        sortModel: current.filter((item: any) => item.columnId !== columnId),
                     },
                 };
             });

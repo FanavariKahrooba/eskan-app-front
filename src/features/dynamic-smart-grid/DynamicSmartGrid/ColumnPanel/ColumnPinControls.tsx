@@ -1,4 +1,5 @@
-import type { DynamicGridPinDirection } from "../DynamicSmartGrid.types";
+// import type { DynamicGridPinDirection } from "../DynamicSmartGrid.types";
+// import { DynamicGridPinDirection } from "..";
 import { useDynamicSmartGridContext } from "../DynamicSmartGrid.context";
 
 export function ColumnPinControls() {
@@ -10,7 +11,7 @@ export function ColumnPinControls() {
     return null;
   }
 
-  const pinColumn = (columnId: string, direction: DynamicGridPinDirection) => {
+  const pinColumn = (columnId: string, direction: any) => {
     setColumnPinning((prev) => ({
       ...prev,
       [columnId]: direction,

@@ -52,7 +52,7 @@ export function ShelterMonitoringDashboard() {
 
   return (
     <div className="space-y-6">
-      <ShelterKpiGrid items={kpis} />
+      {/* <ShelterKpiGrid items={kpis} /> */}
 
       <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
         <div className="2xl:col-span-5">

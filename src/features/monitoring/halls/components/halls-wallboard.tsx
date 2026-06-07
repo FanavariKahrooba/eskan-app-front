@@ -24,11 +24,11 @@ export function HallsWallboard() {
     );
   }
 
-  const kpis = buildHallKpis(data);
+  // const kpis = buildHallKpis(data);
 
   return (
     <div className="space-y-6">
-      <HallsKpiGrid items={kpis} wallboard />
+      {/* <HallsKpiGrid items={kpis} wallboard />
 
       <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
         <div className="2xl:col-span-4">
@@ -40,7 +40,7 @@ export function HallsWallboard() {
         </div>
       </div>
 
-      <HallsTopTable items={data.top_halls} wallboard />
+      <HallsTopTable items={data.top_halls} wallboard /> */}
     </div>
   );
 }

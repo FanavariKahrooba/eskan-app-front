@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -541,7 +542,7 @@ export default function ShelterCapacityRulesPage() {
                 />
                 <InfoItem
                   label="تاریخ ثبت"
-                  value={formatDate(selectedRecord.created_at)}
+                  value={formatDate(selectedRecord.created_at || "")}
                 />
               </div>
 

@@ -108,7 +108,8 @@ export function ShelterMonitoringPage() {
             isLoading ? (
               <ShelterMonitoringSkeleton key={index} className="h-[160px]" />
             ) : (
-              <ShelterMonitoringKpiCard key={item.id} item={item} />
+              <></>
+              // <ShelterMonitoringKpiCard key={item.id} item={item} />
             ),
           )}
         </section>

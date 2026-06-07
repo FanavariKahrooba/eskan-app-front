@@ -1,6 +1,6 @@
 "use client"
 
-import { ALL_WIDGETS } from "@/utils/widget-registry"
+// import { ALL_WIDGETS } from "@/utils/widget-registry"
 import { AnimatePresence, motion } from "framer-motion"
 
 
@@ -29,7 +29,7 @@ export default function WidgetSelectorModal({ open, onClose, onAdd, activeIds }:
             <h2 className="text-lg font-semibold mb-5">افزودن ویجت</h2>
 
             <div className="grid grid-cols-3 gap-4">
-              {ALL_WIDGETS.map((w) => {
+              {/* {ALL_WIDGETS.map((w) => {
                 const Icon = w.icon
                 const active = activeIds.includes(w.id)
 
@@ -53,7 +53,7 @@ export default function WidgetSelectorModal({ open, onClose, onAdd, activeIds }:
                     <span className="text-sm">{w.title}</span>
                   </button>
                 )
-              })}
+              })} */}
             </div>
 
             <div className="flex justify-end mt-6">
