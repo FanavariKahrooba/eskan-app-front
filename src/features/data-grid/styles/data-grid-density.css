@@ -1,0 +1,14 @@
+.dg-root[data-density='compact'] {
+    --dg-cell-padding-x: 8px;
+    --dg-cell-padding-y: 6px;
+}
+
+.dg-root[data-density='comfortable'] {
+    --dg-cell-padding-x: 12px;
+    --dg-cell-padding-y: 10px;
+}
+
+.dg-root[data-density='spacious'] {
+    --dg-cell-padding-x: 16px;
+    --dg-cell-padding-y: 14px;
+}

@@ -1,0 +1,1 @@
+export { DynamicSmartGridPagination } from "./DynamicSmartGridPagination";

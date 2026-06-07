@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+:root {
+  /* --background: #ffffff;
+  --foreground: #171717; */
+  --background-one: #e9e9e9;
+  --background-two: #fdfdfd;
+  --color-primary: #79009e;
+  --size1: 35px;
+  --size2: 28px;
+  --size3: 24px;
+  --size4: 20px;
+  --size5: 18px;
+  --size6: 16px;
+  --size7: 14px;
+
+  --brand-gradient: linear-gradient(135deg, #79009e 0%, #d79d4b 100%);
+  --react-international-phone-country-selector-dropdown-z-index: 99999;
+
+  --secondary: hsl(210 40% 96%);
+  --secondary-hover: hsl(210 40% 89%);
+  --secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --muted: hsl(210 40% 96.1%);
+  --muted-foreground: hsl(215.4 16.3% 46.9%);
+  --accent: hsl(210 40% 96.1%);
+  --accent-foreground: hsl(222.2 47.4% 11.2%);
+  --danger: hsl(357, 100%, 45%);
+  --danger-hover: hsl(357, 100%, 38%);
+  --danger-foreground: hsl(210 40% 98%);
+  --success: hsl(142, 100%, 33%);
+  --success-hover: hsl(142, 100%, 26%);
+  --success-foreground: hsl(210 40% 98%);
+  --warning: hsl(39, 100%, 41%);
+  --warning-hover: hsl(39, 100%, 34%);
+  --warning-foreground: hsl(210 40% 98%);
+  --info: hsl(210, 100%, 55%);
+  --info-hover: hsl(210, 100%, 45%);
+
+  --shadow-hard-sm: 0 0 4px 2px rgba(0, 0, 0, 0.1);
+  --shadow-hard-md: 0 0 8px 4px rgba(0, 0, 0, 0.2);
+  --shadow-medium-lg: 0 0 12px 0px rgba(0, 0, 0, 0.4);
+  --shadow-soft-lg: 0px 0px 16px -4px rgba(0, 0, 0, 0.4);
+  --radius: 16px;
+}
+
+@theme {
+  --color-primary-button: #ffffff;
+  --color-secondary-button: #4d0064;
+  --color-background-1: #fff8ef;
+}
+
+@theme inline {
+  /* --color-background: var(--background);
+  --color-foreground: var(--foreground); */
+  --color-background-one: var(--background-one);
+  --color-background-two: var(--background-two);
+
+  --color-primary: var(--color-primary);
+  --text-size1: var(--size1);
+  /* 35/24 */
+  --text-size2: var(--size2);
+  --text-size3: var(--size3);
+  --text-size4: var(--size4);
+  --text-size5: var(--size5);
+  --text-size6: var(--size6);
+  --text-size7: var(--size7);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary: var(--secondary);
+  --color-success: var(--success);
+  --color-success-hover: var(--success-hover);
+  --color-success-foreground: var(--success-foreground);
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-warning: var(--warning);
+  --color-warning-hover: var(--warning-hover);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-hover: var(--info-hover);
+  --color-info-foreground: var(--info-foreground);
+
+  --shadow-hard-sm: var(--shadow-hard-sm);
+  --shadow-hard-md: var(--shadow-hard-md);
+  --shadow-medium-lg: var(--shadow-medium-lg);
+  --shadow-soft-lg: var(--shadow-soft-lg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.wrapper {
+  max-width: 1380px;
+  margin-inline: auto;
+}
+
+@media (max-width: 1360) {
+  .wrapper {
+    padding-inline: 12px;
+  }
+}
+
+.button-two {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  background: var(--color-primary);
+  color: white;
+  padding-inline: 15px;
+  padding-block: 4px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: 3px solid transparent;
+  transition: all 0.2s ease-out;
+}
+
+.button-two:hover {
+  border-color: var(--color-primary);
+  background-color: hsl(285, 100%, 98%);
+  color: var(--color-primary);
+}
+
+.button-one {
+  display: inline-block;
+  cursor: pointer;
+  background: var(--color-primary);
+  color: white;
+  padding-inline: 32px;
+  padding-block: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s ease-out;
+}
+
+.button-one:hover {
+  background-color: white;
+  color: var(--color-primary);
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+  top: 130%;
+  width: 100%;
+  height: 2px;
+  background: var(--color-primary);
+  transition: all 0.2s ease-out;
+}
+
+.nav-link:hover::after {
+  top: 110%;
+  opacity: 1;
+}
+
+/* Glass / Neon */
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neon-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.light-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-rtl {
+  from {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.phone-input-scale {
+  transform: scale(1.15);
+  transform-origin: center;
+}
+
+.phone-input-scale {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.react-international-phone-country-selector-dropdown {
+  position: fixed !important;
+  top: auto !important;
+  bottom: auto !important;
+  max-height: 300px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
+.animate-slide {
+  animation: slide 0.35s ease-out;
+}
+
+[dir="rtl"] .animate-slide {
+  animation: slide-rtl 0.35s ease-out;
+}
+
+.animate-fade {
+  animation: fade 0.3s ease-in-out;
+}
