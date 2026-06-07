@@ -20,9 +20,6 @@ export const viewport: Viewport = {
 };
 
 const myFont = localFont({ src: "../../fonts/iraniansans.woff2" });
-// const myFont2 = localFont({
-//   src: "../../fonts/Estedad.woff2",
-// });
 const myFont2 = localFont({
   src: "../../fonts/Estedad.woff2",
 });
