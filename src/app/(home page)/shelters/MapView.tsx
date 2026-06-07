@@ -1,20 +1,105 @@
 "use client";
-import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import { ReactNode, useEffect } from "react";
-import { getAdmissionLabel, getGenderLabel, getStatusConfig, MiniStat, Shelter } from "./SheltersExplorer";
-import EmptyState from "./EmptyState";
-import { ArrowLeft, Layers, LocateFixed, Map, MapPin, Navigation } from "lucide-react";
+
+import { ReactNode, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-const customIcon = new L.Icon({
-  iconUrl: "/assets/static/icon-location.png",
-  iconSize: [22, 34],
-  iconAnchor: [11, 34],
-  popupAnchor: [0, -30],
-});
+import L from "leaflet";
+import {
+  ArrowLeft,
+  Home,
+  Layers,
+  LocateFixed,
+  MapPin,
+  Navigation,
+} from "lucide-react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+import type {
+  Shelter,
+  ShelterAdmissionType,
+  ShelterGenderType,
+  ShelterStatus,
+} from "@/lib/shelter-explorer";
+import EmptyState from "./EmptyState";
+
 const defaultCenter: [number, number] = [35.6892, 51.389];
+
+function createShelterIcon(status: ShelterStatus) {
+  const colors = {
+    active: {
+      bg: "#10b981",
+      ring: "#d1fae5",
+      dot: "#ffffff",
+    },
+    limited: {
+      bg: "#f59e0b",
+      ring: "#fef3c7",
+      dot: "#ffffff",
+    },
+    full: {
+      bg: "#ef4444",
+      ring: "#fee2e2",
+      dot: "#ffffff",
+    },
+    unknown: {
+      bg: "#71717a",
+      ring: "#e4e4e7",
+      dot: "#ffffff",
+    },
+  };
+
+  const palette =
+    status === "active"
+      ? colors.active
+      : status === "limited"
+        ? colors.limited
+        : status === "full"
+          ? colors.full
+          : colors.unknown;
+
+  return L.divIcon({
+    className: "custom-shelter-marker",
+    html: `
+      <div style="position: relative; width: 34px; height: 46px; display:flex; align-items:center; justify-content:center;">
+        <div style="
+          position:absolute;
+          top:2px;
+          left:50%;
+          transform:translateX(-50%);
+          width:30px;
+          height:30px;
+          border-radius:9999px;
+          background:${palette.bg};
+          border:3px solid ${palette.ring};
+          box-shadow:0 10px 20px rgba(0,0,0,.18);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        ">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1v-9.5Z" fill="${palette.dot}" />
+          </svg>
+        </div>
+        <div style="
+          position:absolute;
+          bottom:1px;
+          left:50%;
+          transform:translateX(-50%);
+          width:0;
+          height:0;
+          border-left:8px solid transparent;
+          border-right:8px solid transparent;
+          border-top:14px solid ${palette.bg};
+          filter:drop-shadow(0 4px 8px rgba(0,0,0,.18));
+        "></div>
+      </div>
+    `,
+    iconSize: [34, 46],
+    iconAnchor: [17, 44],
+    popupAnchor: [0, -36],
+  });
+}
 
 export default function MapView({
   shelters,
@@ -44,7 +129,7 @@ export default function MapView({
               نقشه سراها
             </h2>
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-              نقاط از API واقعی خوانده می‌شوند. روی هر نشانگر کلیک کنید.
+              روی هر نشانگر کلیک کنید.
             </p>
           </div>
 
@@ -55,6 +140,8 @@ export default function MapView({
         </div>
 
         <div className="relative overflow-hidden rounded-[24px]">
+          <MapSkin />
+
           <div className="absolute left-4 top-4 z-[500] flex flex-col gap-2">
             <MapControl icon={<Navigation className="h-4 w-4" />} />
             <MapControl icon={<LocateFixed className="h-4 w-4" />} />
@@ -71,12 +158,13 @@ export default function MapView({
 
             {shelters.map((shelter) => {
               const statusConfig = getStatusConfig(shelter.status);
+              const markerIcon = createShelterIcon(shelter.status);
 
               return (
                 <Marker
                   key={shelter.id}
                   position={[shelter.lat, shelter.lng]}
-                  icon={customIcon}
+                  icon={markerIcon}
                   eventHandlers={{
                     click: () => setSelectedShelter(shelter),
                   }}
@@ -156,6 +244,40 @@ export default function MapView({
       </div>
     </div>
   );
+}
+
+function MapSkin() {
+  const map = useMapOptionalTheme();
+
+  useEffect(() => {
+    if (!map) return;
+
+    const container = map.getContainer();
+    const isDark =
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark");
+
+    if (isDark) {
+      container.style.filter =
+        "saturate(.9) brightness(.88) contrast(1.05) hue-rotate(190deg)";
+    } else {
+      container.style.filter = "none";
+    }
+
+    return () => {
+      container.style.filter = "none";
+    };
+  }, [map]);
+
+  return null;
+}
+
+function useMapOptionalTheme() {
+  try {
+    return useMap();
+  } catch {
+    return null;
+  }
 }
 
 function MapControl({ icon }: { icon: ReactNode }) {
@@ -290,4 +412,88 @@ function LegendItem({ color, label }: { color: string; label: string }) {
       {label}
     </div>
   );
+}
+
+function MiniStat({
+  label,
+  value,
+  green,
+}: {
+  label: string;
+  value: number;
+  green?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border p-4 ${
+        green
+          ? "border-emerald-200 bg-emerald-50 dark:border-emerald-400/20 dark:bg-emerald-500/10"
+          : "border-zinc-200 bg-zinc-50 dark:border-white/10 dark:bg-zinc-950/50"
+      }`}
+    >
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className="mt-2 text-lg font-black text-zinc-950 dark:text-white">
+        {value.toLocaleString("fa-IR")}
+      </p>
+    </div>
+  );
+}
+
+function getGenderLabel(value: ShelterGenderType) {
+  switch (value) {
+    case "men":
+      return "آقایان";
+    case "women":
+      return "بانوان";
+    case "family":
+      return "خانواده";
+    case "mixed":
+    default:
+      return "مختلط";
+  }
+}
+
+function getAdmissionLabel(value: ShelterAdmissionType) {
+  switch (value) {
+    case "emergency":
+      return "اضطراری";
+    case "referral":
+      return "معرفی‌نامه";
+    case "normal":
+    default:
+      return "عادی";
+  }
+}
+
+function getStatusConfig(status: ShelterStatus) {
+  switch (status) {
+    case "active":
+      return {
+        label: "فعال",
+        badgeClass:
+          "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300",
+        popupBadgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      };
+    case "limited":
+      return {
+        label: "ظرفیت محدود",
+        badgeClass:
+          "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-300",
+        popupBadgeClass: "border-amber-200 bg-amber-50 text-amber-700",
+      };
+    case "full":
+      return {
+        label: "تکمیل",
+        badgeClass:
+          "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/20 dark:bg-rose-500/10 dark:text-rose-300",
+        popupBadgeClass: "border-rose-200 bg-rose-50 text-rose-700",
+      };
+    default:
+      return {
+        label: "نامشخص",
+        badgeClass:
+          "border-zinc-200 bg-zinc-50 text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300",
+        popupBadgeClass: "border-zinc-200 bg-zinc-50 text-zinc-700",
+      };
+  }
 }

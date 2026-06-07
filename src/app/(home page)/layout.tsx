@@ -4,6 +4,7 @@ import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import localFont from "next/font/local";
 import ThemeProvider from "@/components/theme-provider";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "سامانه اسکان سرای محله",
@@ -39,16 +40,18 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextTopLoader color="oklch(0.606 0.25 292.717)" height={4} />
-        <ThemeProvider>{children}</ThemeProvider>
+        <Providers>
+          <ThemeProvider>{children}</ThemeProvider>
+        </Providers>
       </body>
 
-      <Script
+      {/* <Script
         id="goftino-widget"
         strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `!function(){var i="ivTdwR",a=window,d=document;function g(){var g=d.createElement("script"),s="https://www.goftino.com/widget/"+i,l=localStorage.getItem("goftino_"+i);g.async=!0,g.src=l?s+"?o="+l:s;d.getElementsByTagName("head")[0].appendChild(g);}"complete"===d.readyState?g():a.attachEvent?a.attachEvent("onload",g):a.addEventListener("load",g,!1);}();`,
         }}
-      />
+      /> */}
     </html>
   );
 }
