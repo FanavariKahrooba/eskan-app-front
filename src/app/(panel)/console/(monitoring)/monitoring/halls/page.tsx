@@ -6,8 +6,8 @@ export default function HallsMonitoringPage() {
     <MonitoringPageShell
       title="مانیتورینگ سراهای محله"
       description="پایش وضعیت عملیاتی، کیفیت داده، امکانات و ظرفیت اسکان سراهای محله"
-      wallboardHref="/monitoring/halls/wallboard"
-      backHref="/monitoring"
+      wallboardHref="/console/monitoring/halls/wallboard"
+      backHref="/console/monitoring"
     >
       <HallsMonitoringDashboard />
     </MonitoringPageShell>

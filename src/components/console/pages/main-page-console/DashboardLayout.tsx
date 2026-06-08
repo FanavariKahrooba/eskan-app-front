@@ -511,23 +511,30 @@ export default function DashboardLayout() {
     {
       title: "مانیتورینگ سراها",
       description: "بررسی وضعیت فعالیت، داده‌های پایه و مراکز برتر",
-      href: "/monitoring/halls",
+      href: "/console/monitoring/halls",
       icon: Building2,
       color: "from-sky-500 to-cyan-500",
     },
     {
       title: "مانیتورینگ اسکان",
       description: "پایش ظرفیت، وضعیت بحرانی و مراکز فعال اسکان",
-      href: "/monitoring/shelter",
+      href: "/console/monitoring/shelter",
       icon: Home,
       color: "from-violet-500 to-fuchsia-500",
     },
     {
       title: "Wallboard عملیاتی",
       description: "نمای لحظه‌ای برای نمایش در اتاق پایش و مانیتور مرکزی",
-      href: "/monitoring/halls/wallboard",
+      href: "/console/monitoring/halls/wallboard",
       icon: BarChart3,
       color: "from-emerald-500 to-teal-500",
+    },
+    {
+      title: "نقشه سراها",
+      description: "بررسی وضعیت فعالیت،  بر روی نقشه",
+      href: "/console/monitoring/shelter",
+      icon: Building2,
+      color: "from-sky-500 to-cyan-500",
     },
   ];
 
@@ -871,7 +878,7 @@ export default function DashboardLayout() {
 
               <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Link
-                  href="/monitoring/halls/wallboard"
+                  href="/console/monitoring/halls/wallboard"
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-200 hover:bg-sky-50"
                 >
                   <div className="text-sm font-black text-slate-900">
@@ -883,7 +890,7 @@ export default function DashboardLayout() {
                 </Link>
 
                 <Link
-                  href="/monitoring/shelter/wallboard"
+                  href="/console/monitoring/shelter/wallboard"
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-200 hover:bg-violet-50"
                 >
                   <div className="text-sm font-black text-slate-900">
