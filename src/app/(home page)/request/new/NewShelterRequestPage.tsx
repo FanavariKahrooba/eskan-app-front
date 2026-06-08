@@ -52,11 +52,7 @@ type FormErrors = Partial<
   >
 >;
 
-const CURRENT_STATUS_OPTIONS = [
-
-  "ارجاع از نهاد حمایتی",
-  "نیازمند اسکان موقت",
-];
+const CURRENT_STATUS_OPTIONS = ["نیازمند اسکان موقت"];
 
 const initialFormData: FormDataState = {
   firstName: "",
