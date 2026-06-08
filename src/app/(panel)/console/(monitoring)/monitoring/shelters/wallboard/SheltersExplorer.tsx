@@ -31,10 +31,10 @@ import {
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
-import SheltersExplorerLoading from "./SheltersExplorerLoading";
-import EmptyState from "./EmptyState";
+import SheltersExplorerLoading from "../SheltersExplorerLoading";
+import EmptyState from "../EmptyState";
 
-const MapView = dynamic(() => import("./MapView"), {
+const MapView = dynamic(() => import("../MapView"), {
   ssr: false,
   loading: () => <SheltersExplorerLoading />,
 });
@@ -42,7 +42,7 @@ const MapView = dynamic(() => import("./MapView"), {
 type ShelterStatus = "active" | "limited" | "full";
 type ShelterGenderType = "men" | "women" | "family" | "mixed";
 type ShelterAdmissionType = "normal" | "emergency" | "referral";
-type ViewMode = "list" | "map";
+type ViewMode = "list" | "map" | "wallboard";
 
 type RegionItem = {
   id: number | string;
@@ -148,6 +148,7 @@ export default function SheltersExplorer() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const debouncedSearch = useDebouncedValue(search, 350);
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -176,6 +177,27 @@ export default function SheltersExplorer() {
     placeholderData: (previousData) => previousData,
   });
 
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      await document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
   useEffect(() => {
     let mounted = true;
 
@@ -525,6 +547,14 @@ function ViewSwitcher({
       >
         <Map className="h-4 w-4" />
         نقشه‌ای
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setViewMode("wallboard")}
+        className={viewMode === "wallboard" ? "active" : ""}
+      >
+        Wallboard
       </button>
     </div>
   );
@@ -1084,6 +1114,7 @@ function buildPagination(currentPage: number, totalPages: number) {
     totalPages,
   ] as const;
 }
+
 export function MiniStat({
   label,
   value,
@@ -1389,24 +1420,9 @@ function adaptHall(item: ApiHallItem): Shelter | null {
   if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
 
   const totalCapacity = toNumber(item.info?.total_capacity, 0);
+  const freeCapacity = toNumber(item.info?.free_capacity, 0);
   const reservedCapacity = toNumber(item.info?.reserved_capacity, 0);
   const occupiedCapacity = toNumber(item.info?.occupied_capacity, 0);
-
-  /**
-   * نکته:
-   * قبلاً freeCapacity مستقیماً از API گرفته می‌شد:
-   *
-   * const freeCapacity = toNumber(item.info?.free_capacity, 0);
-   *
-   * اما طبق دیتایی که فرستادی، API مقدار free_capacity را 0 می‌فرستد،
-   * در حالی که با توجه به total/reserved/occupied ظرفیت آزاد واقعی وجود دارد.
-   *
-   * بنابراین ظرفیت آزاد را از روی ظرفیت کل، رزروشده و اشغال‌شده محاسبه می‌کنیم.
-   */
-  const freeCapacity = Math.max(
-    0,
-    totalCapacity - reservedCapacity - occupiedCapacity,
-  );
 
   const status: ShelterStatus =
     totalCapacity > 0 && freeCapacity === 0
