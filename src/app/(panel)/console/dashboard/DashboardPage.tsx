@@ -52,7 +52,7 @@ const cards = [
     title: "مانیتورینگ سراهای محله",
     subtitle: "پایش وضعیت سراها، امکانات، ظرفیت، کیفیت داده و وضعیت منطقه‌ای",
     href: "/console/monitoring/halls",
-    wallboardHref: "/console/monitoring/halls/wallboard",
+    wallboardHref: "/monitoring/halls/wallboard",
     color: "from-sky-500 to-blue-700",
   },
   {
@@ -66,7 +66,7 @@ const cards = [
     title: "نقشه و ظرفیت سرای های محله",
     subtitle: "پایش ظرفیت، درخواست‌ها، رزروها، فضاها، هشدارها و لاگ‌های اسکان",
     href: "/console/monitoring/shelters",
-    wallboardHref: "/console/monitoring/shelters/wallboard",
+    wallboardHref: "/monitoring/shelters/wallboard",
     color: "from-cyan-500 to-teal-700",
   },
 ];

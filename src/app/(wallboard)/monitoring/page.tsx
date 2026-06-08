@@ -22,6 +22,13 @@ const cards = [
     wallboardHref: "/monitoring/shelters/wallboard",
     color: "from-violet-500 to-fuchsia-700",
   },
+  {
+    title: "مانیتورینگ سراهای محله",
+    subtitle: "پایش وضعیت سراها، امکانات، ظرفیت، کیفیت داده و وضعیت منطقه‌ای",
+    href: "/console/monitoring/neighborhood-halls",
+    wallboardHref: "/monitoring/neighborhood-halls/wallboard",
+    color: "from-sky-500 to-blue-700",
+  },
 ];
 
 export default function MonitoringIndexPage() {

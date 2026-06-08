@@ -525,7 +525,7 @@ export default function DashboardLayout() {
     {
       title: "Wallboard عملیاتی",
       description: "نمای لحظه‌ای برای نمایش در اتاق پایش و مانیتور مرکزی",
-      href: "/console/monitoring/halls/wallboard",
+      href: "/monitoring/halls/wallboard",
       icon: BarChart3,
       color: "from-emerald-500 to-teal-500",
     },
@@ -878,7 +878,7 @@ export default function DashboardLayout() {
 
               <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Link
-                  href="/console/monitoring/halls/wallboard"
+                  href="/monitoring/halls/wallboard"
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-sky-200 hover:bg-sky-50"
                 >
                   <div className="text-sm font-black text-slate-900">
@@ -890,7 +890,7 @@ export default function DashboardLayout() {
                 </Link>
 
                 <Link
-                  href="/console/monitoring/shelter/wallboard"
+                  href="/monitoring/shelter/wallboard"
                   className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-200 hover:bg-violet-50"
                 >
                   <div className="text-sm font-black text-slate-900">
