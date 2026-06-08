@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const targetUrl = new URL(`${BACKEND_BASE_URL}/v1/admin/halls/overview`);
+    const targetUrl = new URL(`${BACKEND_BASE_URL}/api/v1/admin/halls/overview`);
 
     searchParams.forEach((value, key) => {
       targetUrl.searchParams.set(key, value);
