@@ -12,22 +12,22 @@ const AuthFlowContext = createContext<AuthFlowContextProps | undefined>(
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const { user, isAuthenticated, register, logout, registerOtp, VerifyOtp } =
+  const { user, isAuthenticated, registerOtp, VerifyOtp } =
     useAuth();
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        register,
-        logout,
-        registerOtp,
-        VerifyOtp
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  // return (
+  //   <AuthContext.Provider
+  //     value={{
+  //       user,
+  //       isAuthenticated,
+  //       register,
+  //       logout,
+  //       registerOtp,
+  //       VerifyOtp
+  //     }}
+  //   >
+  //     {children}
+  //   </AuthContext.Provider>
+  // );
 };
 export const AuthFlowProvider: React.FC<{ children: React.ReactNode }> = ({
   children
