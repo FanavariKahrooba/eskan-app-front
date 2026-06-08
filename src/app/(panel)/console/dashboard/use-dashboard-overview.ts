@@ -3,46 +3,82 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-type DashboardOverviewFilters = {
+export type DashboardOverviewFilters = {
     top?: number;
-    recent?: number;
-    alerts?: number;
-    search?: string;
-    tab?: string;
     region_id?: number | null;
     district_id?: number | null;
 };
 
-export function useDashboardOverview(filters: DashboardOverviewFilters) {
-    return useQuery({
-        queryKey: ["dashboard-overview", filters],
+export type HallKpis = {
+    total_halls: number;
+    active_halls: number;
+    inactive_halls: number;
+    halls_with_info: number;
+    halls_without_info: number;
+    halls_with_geo: number;
+    halls_with_missing_geo: number;
+    halls_with_contact: number;
+    halls_with_missing_contact: number;
+    halls_with_manager: number;
+    halls_without_manager: number;
+    shelter_enabled_halls: number;
+    halls_with_profile: number;
+    halls_without_profile: number;
+    total_capacity: number;
+    usable_capacity: number;
+    available_capacity: number;
+    reserved_capacity: number;
+    occupied_capacity: number;
+    average_usage_rate: number;
+    average_occupancy_rate: number;
+    critical_halls: number;
+    halls_with_programs: number;
+};
+
+export type StatusBreakdownItem = {
+    key: string;
+    label: string;
+    value: number;
+};
+
+export type RegionBreakdownItem = {
+    region_id: number;
+    region_name: string;
+    total_halls: number;
+    active_halls: number;
+    shelter_enabled_halls: number;
+    halls_with_info: number;
+    total_capacity: number;
+    available_capacity: number;
+    usage_rate: number;
+};
+
+export type HallsOverviewResponse = {
+    success: boolean;
+    generated_at: string;
+    data: {
+        kpis: HallKpis;
+        status_breakdown: StatusBreakdownItem[];
+        region_breakdown: RegionBreakdownItem[];
+    };
+};
+
+export function useDashboardOverview(filters: DashboardOverviewFilters = {}) {
+    return useQuery<HallsOverviewResponse>({
+        queryKey: ["dashboard-halls-overview", filters],
         queryFn: async () => {
-            const shelterParams = {
-                top: filters.top ?? 5,
-                recent_requests: filters.recent ?? 8,
-                capacity_logs: filters.alerts ?? 8,
-            };
+            const response = await axios.get<HallsOverviewResponse>(
+                "/api/dashboard/halls-overview",
+                {
+                    params: {
+                        top: filters.top ?? 8,
+                        region_id: filters.region_id ?? undefined,
+                        district_id: filters.district_id ?? undefined,
+                    },
+                },
+            );
 
-            const hallsParams = {
-                top: filters.top ?? 8,
-                region_id: filters.region_id ?? null,
-                district_id: filters.district_id ?? null,
-            };
-
-            const [shelterResponse, hallsResponse] = await Promise.all([
-                axios.get("/api/dashboard/shelter-overview", {
-                    params: shelterParams,
-                }),
-                axios.get("/api/dashboard/halls-overview", {
-                    params: hallsParams,
-                }),
-            ]);
-
-            return {
-                shelter: shelterResponse.data,
-                halls: hallsResponse.data,
-                filters,
-            };
+            return response.data;
         },
     });
 }

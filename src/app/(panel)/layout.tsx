@@ -8,7 +8,7 @@ import "./form.setup";
 import { ReactQueryProvider } from "@/providers/react-query-provider";
 
 export const metadata: Metadata = {
-  title: "نام سایت | پنل سفارش",
+  title: " سامانه اسکان سرای محله | پنل مدیریت",
   description: "",
 };
 export const viewport: Viewport = {
@@ -34,7 +34,10 @@ export default function RootPanelLayout({
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body className={`antialiased   ${myFont.className} scroll-smooth`}>
         <NextTopLoader color="oklch(0.606 0.25 292.717)" height={4} />
-        <ReactQueryProvider> <DashboardLayout>{children}</DashboardLayout> </ReactQueryProvider>
+        <ReactQueryProvider>
+          {" "}
+          <DashboardLayout>{children}</DashboardLayout>{" "}
+        </ReactQueryProvider>
       </body>
     </html>
   );

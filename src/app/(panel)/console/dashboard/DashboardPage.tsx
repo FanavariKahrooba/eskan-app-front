@@ -2,6 +2,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+
 import EmptyState from "@/features/power-shell-pro/components/enterprise/empty-state";
 import PageTabs from "@/features/power-shell-pro/components/enterprise/page-tabs";
 import PageToolbar from "@/features/power-shell-pro/components/enterprise/page-toolbar";
@@ -11,21 +13,13 @@ import { usePagePreferences } from "@/features/power-shell-pro/hooks/use-page-pr
 import PageShell from "@/features/power-shell/components/breadcrumb-tools/page-shell";
 
 import {
-  AlertTriangle,
-  ArrowDownUp,
-  Cuboid,
+  ArrowRight,
   Database,
-  Eye,
   Gauge,
   Layers3,
-  Plus,
+  MapPinned,
   Radar,
   RefreshCcw,
-  Settings,
-  ShieldAlert,
-  Sparkles,
-  TimerReset,
-  Wrench,
 } from "lucide-react";
 import { GiTallBridge } from "react-icons/gi";
 
@@ -53,24 +47,36 @@ const currentUser = {
   featureFlags: ["executive_dashboard", "advanced_reports", "ai_assistant"],
 };
 
+const cards = [
+  {
+    title: "مانیتورینگ سراهای محله",
+    subtitle: "پایش وضعیت سراها، امکانات، ظرفیت، کیفیت داده و وضعیت منطقه‌ای",
+    href: "/console/monitoring/halls",
+    wallboardHref: "/console/monitoring/halls/wallboard",
+    color: "from-sky-500 to-blue-700",
+  },
+  {
+    title: "مانیتورینگ کامل اسکان",
+    subtitle: "پایش ظرفیت، درخواست‌ها، رزروها، فضاها، هشدارها و لاگ‌های اسکان",
+    href: "/console/monitoring/shelter",
+    wallboardHref: "/console/monitoring/shelter/wallboard",
+    color: "from-violet-500 to-fuchsia-700",
+  },
+  {
+    title: "نقشه و ظرفیت سرای های محله",
+    subtitle: "پایش ظرفیت، درخواست‌ها، رزروها، فضاها، هشدارها و لاگ‌های اسکان",
+    href: "/console/monitoring/shelters",
+    wallboardHref: "/console/monitoring/shelters/wallboard",
+    color: "from-cyan-500 to-teal-700",
+  },
+];
+
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
 function toPersianDigits(value: string | number) {
   return String(value).replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
-}
-
-function formatRelative(dateIso?: string) {
-  if (!dateIso) return "—";
-  const diff = Date.now() - new Date(dateIso).getTime();
-  const mins = Math.max(0, Math.floor(diff / 60000));
-  if (mins < 1) return "همین حالا";
-  if (mins < 60) return `${toPersianDigits(mins)} دقیقه پیش`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${toPersianDigits(hours)} ساعت پیش`;
-  const days = Math.floor(hours / 24);
-  return `${toPersianDigits(days)} روز پیش`;
 }
 
 function Badge({ label, className }: { label: string; className: string }) {
@@ -84,88 +90,6 @@ function Badge({ label, className }: { label: string; className: string }) {
       {label}
     </span>
   );
-}
-
-function getSeverityMeta(severity: "high" | "medium" | "low") {
-  switch (severity) {
-    case "high":
-      return {
-        label: "بحرانی",
-        className: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
-      };
-    case "medium":
-      return {
-        label: "متوسط",
-        className:
-          "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
-      };
-    case "low":
-      return {
-        label: "کم",
-        className: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200",
-      };
-    default:
-      return {
-        label: "نامشخص",
-        className: "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200",
-      };
-  }
-}
-
-function getHealthMeta(status?: "healthy" | "warning" | "critical") {
-  switch (status) {
-    case "healthy":
-      return {
-        label: "پایدار",
-        className:
-          "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
-      };
-    case "warning":
-      return {
-        label: "نیاز به بررسی",
-        className:
-          "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200",
-      };
-    case "critical":
-      return {
-        label: "بحرانی",
-        className: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
-      };
-    default:
-      return {
-        label: "نامشخص",
-        className: "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200",
-      };
-  }
-}
-
-function getInspectionStatusMeta(
-  status?: "completed" | "in_progress" | "scheduled",
-) {
-  switch (status) {
-    case "completed":
-      return {
-        label: "تکمیل شده",
-        className:
-          "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200",
-      };
-    case "in_progress":
-      return {
-        label: "در حال انجام",
-        className: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200",
-      };
-    case "scheduled":
-      return {
-        label: "برنامه‌ریزی شده",
-        className:
-          "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-200",
-      };
-    default:
-      return {
-        label: "نامشخص",
-        className: "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200",
-      };
-  }
 }
 
 function StatCard({
@@ -238,6 +162,55 @@ function SectionCard({
   );
 }
 
+function NavigationCard({
+  title,
+  subtitle,
+  href,
+  wallboardHref,
+  color,
+}: {
+  title: string;
+  subtitle: string;
+  href: string;
+  wallboardHref: string;
+  color: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative overflow-hidden rounded-3xl bg-gradient-to-br p-[1px] shadow-sm",
+        color,
+      )}
+    >
+      <div className="h-full rounded-[calc(1.5rem-1px)] bg-white p-5">
+        <div className="flex h-full flex-col justify-between gap-5">
+          <div>
+            <div className="text-base font-bold text-gray-950">{title}</div>
+            <p className="mt-2 text-sm leading-7 text-gray-600">{subtitle}</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href={href}
+              className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-gray-800"
+            >
+              ورود
+              <ArrowRight size={16} />
+            </Link>
+
+            <Link
+              href={wallboardHref}
+              className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+            >
+              وال‌بورد
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const {
     preferences,
@@ -256,7 +229,7 @@ export default function DashboardPage() {
       search: "",
       density: "comfortable",
       pageSize: 10,
-      visibleColumns: ["alerts", "inspections", "members"],
+      visibleColumns: ["regions", "status", "capacity"],
     },
   });
 
@@ -274,14 +247,14 @@ export default function DashboardPage() {
 
   const [filters, setFilters] = React.useState<{
     top?: number;
-    recent?: number;
-    alerts?: number;
+    region_id?: number | null;
+    district_id?: number | null;
     search?: string;
     tab?: string;
   }>({
-    top: 5,
-    recent: 8,
-    alerts: pageSize,
+    top: 8,
+    region_id: null,
+    district_id: null,
     search,
     tab: activeTab,
   });
@@ -290,10 +263,9 @@ export default function DashboardPage() {
     setFilters((prev) => ({
       ...prev,
       search,
-      alerts: pageSize,
       tab: activeTab,
     }));
-  }, [search, pageSize, activeTab]);
+  }, [search, activeTab]);
 
   const {
     data: response,
@@ -301,7 +273,11 @@ export default function DashboardPage() {
     isError,
     error,
     refetch,
-  }:any = useDashboardOverview(filters);
+  } = useDashboardOverview({
+    top: filters.top,
+    region_id: filters.region_id,
+    district_id: filters.district_id,
+  });
 
   if (isLoading || preferenceLoading) {
     return (
@@ -321,7 +297,30 @@ export default function DashboardPage() {
     );
   }
 
-  const data = response.data;
+  const overview = response.data;
+  const kpis = overview.kpis;
+  const statusBreakdown = overview.status_breakdown ?? [];
+  const regionBreakdown = overview.region_breakdown ?? [];
+
+  const filteredRegions = regionBreakdown.filter((region) => {
+    const matchesSearch = !search
+      ? true
+      : region.region_name.toLowerCase().includes(search.toLowerCase());
+
+    if (activeTab === "critical") {
+      return matchesSearch && region.usage_rate >= 70;
+    }
+
+    if (activeTab === "monitoring") {
+      return matchesSearch && region.active_halls > 0;
+    }
+
+    if (activeTab === "model") {
+      return matchesSearch && region.halls_with_info > 0;
+    }
+
+    return matchesSearch;
+  });
 
   return (
     <PermissionGuard
@@ -338,7 +337,7 @@ export default function DashboardPage() {
     >
       <PageShell
         title="داشبورد اصلی"
-        description="نمای یکپارچه و حرفه‌ای از شاخص‌ها، هشدارها، وضعیت پایش، مدل‌ها و فعالیت‌های اخیر سامانه."
+        description="نمای کلی شاخص‌های سراهای محله، وضعیت ظرفیت، کیفیت اطلاعات و تفکیک منطقه‌ای."
         favoriteKey={PAGE_KEY}
         currentPath={`${APP_BASE_PATH}/dashboard`}
         maxWidth="full"
@@ -365,18 +364,6 @@ export default function DashboardPage() {
               await refetch();
             },
           },
-          {
-            id: "new-inspection",
-            label: "ثبت بازرسی",
-            icon: <Plus size={16} />,
-            variant: "primary",
-            onClick: () => {
-              audit.track({
-                type: "dashboard.action",
-                message: "New inspection clicked",
-              });
-            },
-          },
         ]}
         commandActions={[
           {
@@ -388,12 +375,12 @@ export default function DashboardPage() {
             keywords: ["dashboard", "main", "داشبورد"],
           },
           {
-            id: "dashboard-executive",
-            title: "داشبورد مدیریتی",
-            subtitle: "شاخص‌های کلان مدیریتی",
-            group: "داشبورد",
-            href: `${APP_BASE_PATH}/dashboard/executive`,
-            keywords: ["executive", "analytics", "مدیریتی"],
+            id: "dashboard-halls-monitoring",
+            title: "مانیتورینگ سراهای محله",
+            subtitle: "ورود به مانیتورینگ سراها",
+            group: "مانیتورینگ",
+            href: "/console/monitoring/halls",
+            keywords: ["halls", "monitoring", "سرا"],
           },
           {
             id: "reset-dashboard-preferences",
@@ -411,17 +398,22 @@ export default function DashboardPage() {
         ]}
         headerMeta={
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
-              {toPersianDigits(data.summary?.critical_alerts ?? 0)} هشدار بحرانی
-            </span>
-            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-              {toPersianDigits(data.summary?.warning_items ?? 0)} مورد نیازمند
-              بررسی
-            </span>
             <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-              {toPersianDigits(data.summary?.active_monitors ?? 0)} منبع پایش
-              فعال
+              {toPersianDigits(kpis.total_halls)} سالن
             </span>
+
+            <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+              {toPersianDigits(kpis.active_halls)} فعال
+            </span>
+
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
+              ظرفیت کل: {toPersianDigits(kpis.total_capacity)}
+            </span>
+
+            <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">
+              استفاده: {toPersianDigits(kpis.average_usage_rate)}٪
+            </span>
+
             {saving ? (
               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
                 در حال ذخیره...
@@ -429,23 +421,24 @@ export default function DashboardPage() {
             ) : null}
           </div>
         }
-        headerRightSlot={
-          <PermissionGuard
-            permissions={currentUser.permissions}
-            required="settings.view"
-          >
-            <button
-              type="button"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              <Settings size={16} />
-              تنظیمات
-            </button>
-          </PermissionGuard>
-        }
       >
         <div className="space-y-6">
           <MonitoringFadeIn>
+            <section className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              {cards.map((card) => (
+                <NavigationCard
+                  key={card.href}
+                  title={card.title}
+                  subtitle={card.subtitle}
+                  href={card.href}
+                  wallboardHref={card.wallboardHref}
+                  color={card.color}
+                />
+              ))}
+            </section>
+          </MonitoringFadeIn>
+
+          <MonitoringFadeIn delay={0.03}>
             <PageToolbar
               search={search}
               onSearchChange={(value) => {
@@ -471,7 +464,7 @@ export default function DashboardPage() {
             />
           </MonitoringFadeIn>
 
-          <MonitoringFadeIn delay={0.03}>
+          <MonitoringFadeIn delay={0.05}>
             <div className="rounded-2xl border border-gray-200 bg-white px-4 shadow-sm">
               <PageTabs
                 value={activeTab}
@@ -487,185 +480,142 @@ export default function DashboardPage() {
                   {
                     id: "all",
                     label: "نمای کلی",
-                    badge: data.summary?.total_items ?? 0,
+                    badge: kpis.total_halls,
                   },
                   {
                     id: "critical",
                     label: "بحرانی",
-                    badge: data.summary?.critical_alerts ?? 0,
+                    badge: kpis.critical_halls,
                   },
                   {
                     id: "monitoring",
-                    label: "پایش",
-                    badge: data.summary?.active_monitors ?? 0,
+                    label: "فعال",
+                    badge: kpis.active_halls,
                   },
                   {
                     id: "model",
-                    label: "مدل",
-                    badge: data.summary?.synced_models ?? 0,
+                    label: "دارای اطلاعات",
+                    badge: kpis.halls_with_info,
                   },
                 ]}
               />
             </div>
           </MonitoringFadeIn>
 
-          <MonitoringFadeIn delay={0.05}>
+          <MonitoringFadeIn delay={0.07}>
             <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
               <StatCard
-                title="مجموع دارایی‌ها"
-                value={toPersianDigits(data.summary?.total_items ?? 0)}
-                description="تعداد کل آیتم‌های ثبت‌شده"
+                title="مجموع سالن‌ها"
+                value={toPersianDigits(kpis.total_halls)}
+                description="تعداد کل سالن‌های ثبت‌شده"
                 icon={<GiTallBridge size={20} />}
                 tone="blue"
               />
+
               <StatCard
-                title="مدل‌های همگام"
-                value={toPersianDigits(data.summary?.synced_models ?? 0)}
-                description="مدل‌های متصل به داده"
-                icon={<Cuboid size={20} />}
-                tone="violet"
-              />
-              <StatCard
-                title="منابع پایش فعال"
-                value={toPersianDigits(data.summary?.active_monitors ?? 0)}
-                description="جریان‌های فعال مانیتورینگ"
-                icon={<Radar size={20} />}
+                title="سالن‌های فعال"
+                value={toPersianDigits(kpis.active_halls)}
+                description="سالن‌های دارای وضعیت فعال"
+                icon={<Gauge size={20} />}
                 tone="emerald"
               />
+
               <StatCard
-                title="هشدارهای باز"
-                value={toPersianDigits(data.summary?.open_alerts ?? 0)}
-                description="هشدارهای در انتظار رسیدگی"
-                icon={<AlertTriangle size={20} />}
-                tone="rose"
-              />
-              <StatCard
-                title="پوشش داده"
-                value={`${toPersianDigits(data.summary?.data_coverage ?? 0)}٪`}
-                description="درصد پوشش داده‌های سامانه"
+                title="ظرفیت کل"
+                value={toPersianDigits(kpis.total_capacity)}
+                description="مجموع ظرفیت ثبت‌شده"
                 icon={<Database size={20} />}
+                tone="violet"
+              />
+
+              <StatCard
+                title="ظرفیت آزاد"
+                value={toPersianDigits(kpis.available_capacity)}
+                description="ظرفیت قابل استفاده و آزاد"
+                icon={<Layers3 size={20} />}
                 tone="amber"
+              />
+
+              <StatCard
+                title="نرخ استفاده"
+                value={`${toPersianDigits(kpis.average_usage_rate)}٪`}
+                description="میانگین نرخ استفاده از ظرفیت"
+                icon={<Radar size={20} />}
+                tone="rose"
               />
             </section>
           </MonitoringFadeIn>
 
           <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
-            <div className="2xl:col-span-8">
+            <div className="2xl:col-span-4">
               <SectionCard
-                title="هشدارهای اولویت‌دار"
-                description="فهرست مهم‌ترین هشدارهای سامانه بر اساس داده‌های دریافتی."
-                action={
-                  <button
-                    type="button"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                  >
-                    <ArrowDownUp size={15} />
-                    مرتب‌سازی
-                  </button>
-                }
+                title="وضعیت سالن‌ها"
+                description="توزیع سالن‌ها بر اساس وضعیت ثبت‌شده."
               >
-                {!data.alerts?.length ? (
+                {!statusBreakdown.length ? (
                   <EmptyState
-                    title="هشداری یافت نشد"
-                    description="برای فیلترها یا عبارت جستجوی فعلی، موردی ثبت نشده است."
+                    title="داده‌ای یافت نشد"
+                    description="اطلاعات وضعیت سالن‌ها در پاسخ API موجود نیست."
                   />
                 ) : (
                   <div className="space-y-3">
-                    {data.alerts.map((item: any) => {
-                      const meta = getSeverityMeta(item.severity);
-
-                      return (
-                        <div
-                          key={item.id}
-                          className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
-                        >
-                          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                            <div>
-                              <div className="flex flex-wrap items-center gap-2">
-                                <div className="text-sm font-semibold text-gray-950">
-                                  {item.title}
-                                </div>
-                                <Badge
-                                  label={meta.label}
-                                  className={meta.className}
-                                />
-                              </div>
-                              <div className="mt-2 text-sm text-gray-600">
-                                {item.subtitle ?? item.source ?? "—"}
-                              </div>
-                              <div className="mt-1 text-xs text-gray-500">
-                                {formatRelative(item.created_at)}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                              >
-                                <Eye size={15} />
-                                مشاهده
-                              </button>
-                              <button
-                                type="button"
-                                className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-gray-950 px-3 text-sm font-medium text-white transition hover:bg-gray-800"
-                              >
-                                <Wrench size={15} />
-                                اقدام
-                              </button>
-                            </div>
-                          </div>
+                    {statusBreakdown.map((item) => (
+                      <div
+                        key={item.key}
+                        className="flex items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 p-4"
+                      >
+                        <div className="text-sm font-medium text-gray-800">
+                          {item.label}
                         </div>
-                      );
-                    })}
+                        <div className="rounded-xl bg-white px-3 py-1 text-sm font-bold text-gray-950 ring-1 ring-inset ring-gray-200">
+                          {toPersianDigits(item.value)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </SectionCard>
             </div>
 
-            <div className="2xl:col-span-4">
+            <div className="2xl:col-span-8">
               <SectionCard
-                title="سلامت سیستم"
-                description="جمع‌بندی لحظه‌ای از کیفیت، پایش و همگام‌سازی داده."
+                title="ظرفیت و پوشش داده"
+                description="خلاصه کیفیت اطلاعات، ظرفیت و وضعیت بهره‌برداری سالن‌ها."
               >
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
-                      <Gauge size={16} />
-                      وضعیت پایش
+                    <div className="text-sm font-semibold text-emerald-800">
+                      سالن‌های دارای اطلاعات
                     </div>
-                    <p className="mt-2 text-sm leading-7 text-emerald-700">
-                      <strong>
-                        {toPersianDigits(data.health?.monitoring_score ?? 0)}٪
-                      </strong>{" "}
-                      پایداری در جریان داده‌های مانیتورینگ ثبت شده است.
+                    <div className="mt-3 text-2xl font-bold text-emerald-900">
+                      {toPersianDigits(kpis.halls_with_info)}
+                    </div>
+                    <p className="mt-2 text-sm text-emerald-700">
+                      بدون اطلاعات: {toPersianDigits(kpis.halls_without_info)}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-violet-800">
-                      <Layers3 size={16} />
-                      همگام‌سازی مدل
+                  <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                    <div className="text-sm font-semibold text-blue-800">
+                      اطلاعات تماس و مدیر
                     </div>
-                    <p className="mt-2 text-sm leading-7 text-violet-700">
-                      <strong>
-                        {toPersianDigits(data.summary?.synced_models ?? 0)}
-                      </strong>{" "}
-                      منبع یا مدل با داده‌های جاری همگام هستند.
+                    <div className="mt-3 text-2xl font-bold text-blue-900">
+                      {toPersianDigits(kpis.halls_with_contact)}
+                    </div>
+                    <p className="mt-2 text-sm text-blue-700">
+                      دارای مدیر: {toPersianDigits(kpis.halls_with_manager)}
                     </p>
                   </div>
 
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
-                      <ShieldAlert size={16} />
-                      کیفیت داده
+                    <div className="text-sm font-semibold text-amber-800">
+                      ظرفیت اشغال‌شده
                     </div>
-                    <p className="mt-2 text-sm leading-7 text-amber-700">
-                      <strong>
-                        {toPersianDigits(data.health?.data_quality_score ?? 0)}٪
-                      </strong>{" "}
-                      کیفیت داده برای تحلیل و تصمیم‌یار قابل اتکا ارزیابی شده
-                      است.
+                    <div className="mt-3 text-2xl font-bold text-amber-900">
+                      {toPersianDigits(kpis.occupied_capacity)}
+                    </div>
+                    <p className="mt-2 text-sm text-amber-700">
+                      رزروشده: {toPersianDigits(kpis.reserved_capacity)}
                     </p>
                   </div>
                 </div>
@@ -673,159 +623,213 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
-            <div className="2xl:col-span-6">
-              <SectionCard
-                title="فعالیت‌های اخیر"
-                description="آخرین رویدادها و درخواست‌های ثبت‌شده."
-              >
-                <div className="space-y-3">
-                  {(data.recent_activities ?? []).map((item: any) => {
-                    const meta = getInspectionStatusMeta(item.status);
+          <MonitoringFadeIn delay={0.1}>
+            <SectionCard
+              title="تفکیک منطقه‌ای سالن‌ها"
+              description="نمای منطقه‌ای تعداد سالن‌ها، ظرفیت، ظرفیت آزاد و نرخ استفاده."
+              action={
+                <div className="inline-flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                  <MapPinned size={14} />
+                  {toPersianDigits(filteredRegions.length)} منطقه
+                </div>
+              }
+            >
+              {!filteredRegions.length ? (
+                <EmptyState
+                  title="منطقه‌ای یافت نشد"
+                  description="اطلاعات تفکیک منطقه‌ای برای فیلتر یا جستجوی فعلی موجود نیست."
+                />
+              ) : (
+                <div className="overflow-hidden rounded-2xl border border-gray-200">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 text-right">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            منطقه
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            کل سالن‌ها
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            فعال
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            دارای اطلاعات
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            ظرفیت کل
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            ظرفیت آزاد
+                          </th>
+                          <th className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            نرخ استفاده
+                          </th>
+                        </tr>
+                      </thead>
 
-                    return (
-                      <div
-                        key={item.id}
-                        className="rounded-2xl border border-gray-200 p-4"
-                      >
-                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <div className="font-medium text-gray-950">
-                                {item.title}
+                      <tbody className="divide-y divide-gray-100 bg-white">
+                        {filteredRegions.slice(0, pageSize).map((region) => (
+                          <tr
+                            key={region.region_id}
+                            className="hover:bg-gray-50"
+                          >
+                            <td className="px-4 py-3 text-sm font-medium text-gray-950">
+                              {region.region_name}
+                            </td>
+
+                            <td className="px-4 py-3 text-sm text-gray-700">
+                              {toPersianDigits(region.total_halls)}
+                            </td>
+
+                            <td className="px-4 py-3 text-sm text-gray-700">
+                              {toPersianDigits(region.active_halls)}
+                            </td>
+
+                            <td className="px-4 py-3 text-sm text-gray-700">
+                              {toPersianDigits(region.halls_with_info)}
+                            </td>
+
+                            <td className="px-4 py-3 text-sm text-gray-700">
+                              {toPersianDigits(region.total_capacity)}
+                            </td>
+
+                            <td className="px-4 py-3 text-sm text-gray-700">
+                              {toPersianDigits(region.available_capacity)}
+                            </td>
+
+                            <td className="px-4 py-3 text-sm">
+                              <div className="flex min-w-32 items-center gap-2">
+                                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                  <div
+                                    className="h-full rounded-full bg-blue-500"
+                                    style={{
+                                      width: `${Math.min(
+                                        100,
+                                        Math.max(0, region.usage_rate),
+                                      )}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="w-12 text-xs font-medium text-gray-700">
+                                  {toPersianDigits(region.usage_rate)}٪
+                                </span>
                               </div>
-                              <Badge
-                                label={meta.label}
-                                className={meta.className}
-                              />
-                            </div>
-                            <div className="mt-2 text-sm text-gray-600">
-                              {item.actor ?? "—"} • {item.context ?? "—"}
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500">
-                              {formatRelative(item.created_at)}
-                            </div>
-                          </div>
-
-                          <div className="rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
-                            {item.code ?? item.id}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </SectionCard>
-            </div>
+              )}
+            </SectionCard>
+          </MonitoringFadeIn>
 
-            <div className="2xl:col-span-6">
+          <MonitoringFadeIn delay={0.12}>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <SectionCard
-                title="اقلام حساس"
-                description="مواردی که نیازمند بازبینی یا توجه بیشتر هستند."
+                title="شاخص‌های ظرفیتی"
+                description="خلاصه وضعیت بهره‌برداری و ظرفیت."
               >
                 <div className="space-y-3">
-                  {(data.risky_items ?? []).map((item: any) => {
-                    const meta = getHealthMeta(item.status);
-
-                    return (
-                      <div
-                        key={item.id}
-                        className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="font-medium text-gray-950">
-                              {item.name}
-                            </div>
-                            <div className="mt-1 text-xs text-gray-500">
-                              {item.category ?? "—"} • {item.code ?? item.id}
-                            </div>
-                            <div className="mt-2 text-xs text-gray-500">
-                              بروزرسانی: {formatRelative(item.updated_at)}
-                            </div>
-                          </div>
-                          <Badge
-                            label={meta.label}
-                            className={meta.className}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">
+                      ظرفیت قابل استفاده
+                    </span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.usable_capacity)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">ظرفیت آزاد</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.available_capacity)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">ظرفیت رزروشده</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.reserved_capacity)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">
+                      ظرفیت اشغال‌شده
+                    </span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.occupied_capacity)}
+                    </span>
+                  </div>
                 </div>
               </SectionCard>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
-            <div className="2xl:col-span-8">
               <SectionCard
-                title="جعبه تصمیم‌یار"
-                description="پیشنهادهای هوشمند تولیدشده بر اساس وضعیت جاری سامانه."
-              >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  {(data.recommendations ?? []).map(
-                    (item: any, index: number) => {
-                      const tones = [
-                        "border-blue-200 bg-blue-50 text-blue-700",
-                        "border-amber-200 bg-amber-50 text-amber-700",
-                        "border-emerald-200 bg-emerald-50 text-emerald-700",
-                      ];
-                      const icons = [
-                        <Sparkles key="s" size={16} />,
-                        <ShieldAlert key="a" size={16} />,
-                        <TimerReset key="t" size={16} />,
-                      ];
-                      const style = tones[index % tones.length];
-                      const icon = icons[index % icons.length];
-
-                      return (
-                        <div
-                          key={item.id ?? index}
-                          className={cn("rounded-2xl border p-5", style)}
-                        >
-                          <div className="flex items-center gap-2 text-sm font-semibold">
-                            {icon}
-                            {item.title ??
-                              `پیشنهاد ${toPersianDigits(index + 1)}`}
-                          </div>
-                          <p className="mt-3 text-sm leading-7">
-                            {item.description}
-                          </p>
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-              </SectionCard>
-            </div>
-
-            <div className="2xl:col-span-4">
-              <SectionCard
-                title="Audit Log"
-                description="رویدادهای اخیر این صفحه."
+                title="کیفیت داده"
+                description="پوشش اطلاعات پایه سالن‌ها."
               >
                 <div className="space-y-3">
-                  {(data.audit_logs ?? []).map((entry: any) => (
-                    <div
-                      key={entry.id}
-                      className="rounded-2xl border border-gray-100 bg-gray-50 p-4"
-                    >
-                      <div className="text-sm font-medium text-gray-900">
-                        {entry.message}
-                      </div>
-                      <div className="mt-1 text-xs text-gray-500">
-                        {entry.actor} • {formatRelative(entry.created_at)}
-                      </div>
-                      <div className="mt-2 inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-inset ring-gray-200">
-                        {entry.type}
-                      </div>
-                    </div>
-                  ))}
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">دارای اطلاعات</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_info)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">بدون اطلاعات</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_without_info)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">دارای مختصات</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_geo)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">فاقد مختصات</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_missing_geo)}
+                    </span>
+                  </div>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                title="وضعیت مدیریتی"
+                description="وضعیت پروفایل، تماس و مدیر سالن‌ها."
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">دارای تماس</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_contact)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">فاقد تماس</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_missing_contact)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">دارای مدیر</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_manager)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-2xl border border-gray-200 p-4">
+                    <span className="text-sm text-gray-600">دارای پروفایل</span>
+                    <span className="text-sm font-bold text-gray-950">
+                      {toPersianDigits(kpis.halls_with_profile)}
+                    </span>
+                  </div>
                 </div>
               </SectionCard>
             </div>
-          </div>
+          </MonitoringFadeIn>
         </div>
       </PageShell>
     </PermissionGuard>

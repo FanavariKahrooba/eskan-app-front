@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { Bell } from "lucide-react"
-import { useMemo, useState } from "react"
-import NotificationPanel from "../notifications/notification-panel"
-import { useCommandStore } from "@/store/command-store"
-import QuickAccess from "./quick-access"
-import ProfileDropdown from "./profile-dropdown"
+import { Bell } from "lucide-react";
+import { useMemo, useState } from "react";
+import NotificationPanel from "../notifications/notification-panel";
+import { useCommandStore } from "@/store/command-store";
+import QuickAccess from "./quick-access";
+import ProfileDropdown from "./profile-dropdown";
 export default function Header() {
-  const { setOpen } = useCommandStore()
-  const [openBell, setOpenBell] = useState(false)
-  const unreadCount = useMemo(() => 3, [])
+  const { setOpen } = useCommandStore();
+  const [openBell, setOpenBell] = useState(false);
+  const unreadCount = useMemo(() => 3, []);
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
       <div className="flex min-h-16 w-full items-center gap-3 px-3 sm:px-4">
@@ -34,7 +34,7 @@ export default function Header() {
           <div className="flex items-center gap-3  pr-4 border-r border-gray-100">
             <ProfileDropdown
               user={{
-                name: "رحیم حسینی",
+                name: "مدیریت",
                 role: "مدیر سیستم",
                 email: "rahimhosseini@hooshsevom.ir",
                 avatarText: "RH",
@@ -45,5 +45,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 export default function ActivityFeed() {
   const activities = [
-    { id: 1, user: "رحیم حسینی", action: "یک سفارش جدید ثبت کرد" },
-    { id: 2, user: "علی حسینی", action: "پروفایل خود را بروزرسانی کرد" },
-    { id: 3, user: "رضا احمدی", action: "یک محصول جدید اضافه کرد" },
-  ]
+    { id: 1, user: "مدیریت", action: "یک سفارش جدید ثبت کرد" },
+    // { id: 2, user: "علی حسینی", action: "پروفایل خود را بروزرسانی کرد" },
+    // { id: 3, user: "رضا احمدی", action: "یک محصول جدید اضافه کرد" },
+  ];
 
   return (
     <div className="bg-white/80 backdrop-blur-xl border border-gray-200 rounded-2xl p-6 shadow-md">
@@ -33,11 +33,12 @@ export default function ActivityFeed() {
 
             {/* text */}
             <div className="text-sm text-gray-600">
-              <span className="font-medium text-gray-900">{a.user}</span> {a.action}
+              <span className="font-medium text-gray-900">{a.user}</span>{" "}
+              {a.action}
             </div>
           </motion.div>
         ))}
       </div>
     </div>
-  )
+  );
 }
