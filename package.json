@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev3": "set NODE_OPTIONS=--max-old-space-size=16384 && next dev",
     "dev2": "next dev -H 0.0.0.0 -p 4000",
     "build": "next build",
     "start": "next start -p 3015",
@@ -70,6 +71,7 @@
     "@types/react-input-mask": "^3.0.6",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/three": "^0.184.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.5",
     "tailwindcss": "^4",

@@ -1,6 +1,6 @@
 import ShelterRequestsMonitoring from "./ShelterRequestsMonitoring";
 
-export default function ShelterMonitoringPage() {
+export default function ShelterWallboardPage() {
   return (
     <>
       <ShelterRequestsMonitoring />

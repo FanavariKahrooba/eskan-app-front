@@ -446,41 +446,46 @@ export default function DashboardLayout() {
   const { data: hallsData, isLoading: hallsLoading } = useHallsOverview();
   const { data: shelterData, isLoading: shelterLoading } = useShelterOverview();
 
-  const totalHalls = safeNumber(hallsData?.total_halls);
+  const hallsKpis: any = hallsData?.data?.kpis ?? {};
+  const shelterKpis: any = shelterData?.data?.kpis ?? {};
 
-  const activeHalls = safeNumber(hallsData?.active_halls);
+  const totalHalls: any = safeNumber(hallsKpis.total_halls);
+  const activeHalls = safeNumber(hallsKpis.active_halls);
+  const inactiveHalls = safeNumber(hallsKpis.inactive_halls);
 
-  const geoCovered = safeNumber(hallsData?.geo_covered_halls);
+  const geoCovered = safeNumber(hallsKpis.halls_with_geo);
+  const geoMissing = safeNumber(hallsKpis.halls_with_missing_geo);
 
-  const contactCovered = safeNumber(hallsData?.contact_covered_halls);
+  const contactCovered = safeNumber(hallsKpis.halls_with_contact);
+  const contactMissing = safeNumber(hallsKpis.halls_with_missing_contact);
 
-  const activityRate = safeNumber(hallsData?.activity_rate);
+  const hallsWithManager = safeNumber(hallsKpis.halls_with_manager);
+  const hallsWithoutManager = safeNumber(hallsKpis.halls_without_manager);
 
-  const geoCoverageRate = totalHalls ? (geoCovered / totalHalls) * 100 : 0;
-  const contactCoverageRate = totalHalls
-    ? (contactCovered / totalHalls) * 100
-    : 0;
+  const activityRate =
+    totalHalls > 0 ? clamp((activeHalls / totalHalls) * 100) : 0;
 
-  const shelterEnabled = safeNumber(shelterData?.shelter_enabled_halls);
+  const geoCoverageRate =
+    totalHalls > 0 ? clamp((geoCovered / totalHalls) * 100) : 0;
 
-  const activeShelters = safeNumber(shelterData?.active_shelters);
+  const contactCoverageRate =
+    totalHalls > 0 ? clamp((contactCovered / totalHalls) * 100) : 0;
 
-  const criticalShelters = safeNumber(shelterData?.critical_shelters);
+  const shelterEnabled = safeNumber(shelterKpis.total_halls);
+  const activeShelters = safeNumber(shelterKpis.active_halls);
+  const criticalShelters = safeNumber(shelterKpis.critical_shelters);
 
-  const totalCapacity = safeNumber(shelterData?.total_capacity);
+  const totalCapacity = safeNumber(shelterKpis.total_capacity);
+  const occupiedCapacity = safeNumber(shelterKpis.occupied_capacity);
+  const availableCapacity = safeNumber(shelterKpis.available_capacity);
+  const occupancyRate = clamp(safeNumber(shelterKpis.occupancy_rate));
 
-  const occupiedCapacity = safeNumber(shelterData?.occupied_capacity);
+  const alertsCount = Array.isArray(shelterData?.data?.alerts)
+    ? shelterData.data.alerts.length
+    : safeNumber(shelterKpis.alerts_count);
 
-  const availableCapacity = Math.max(totalCapacity - occupiedCapacity, 0);
-
-  const occupancyRate =
-    totalCapacity > 0 ? clamp((occupiedCapacity / totalCapacity) * 100) : 0;
-
-  const alertsCount = safeNumber(shelterData?.alerts_count);
-
-  const topHall = hallsData?.top_halls?.[0] || null;
-
-  const topShelter = shelterData?.top_shelters?.[0];
+  const topHall = hallsData?.data?.top_halls?.[0] || null;
+  const topShelter = shelterData?.data?.top_shelters?.[0] || null;
 
   const readinessScore = clamp(
     activityRate * 0.3 +
@@ -515,16 +520,16 @@ export default function DashboardLayout() {
       icon: Building2,
       color: "from-sky-500 to-cyan-500",
     },
-    {
-      title: "مانیتورینگ اسکان",
-      description: "پایش ظرفیت، وضعیت بحرانی و مراکز فعال اسکان",
-      href: "/console/monitoring/shelter",
-      icon: Home,
-      color: "from-violet-500 to-fuchsia-500",
-    },
+    // {
+    //   title: "مانیتورینگ اسکان",
+    //   description: "پایش ظرفیت، وضعیت بحرانی و مراکز فعال اسکان",
+    //   href: "/console/monitoring/shelter",
+    //   icon: Home,
+    //   color: "from-violet-500 to-fuchsia-500",
+    // },
     {
       title: "Wallboard عملیاتی",
-      description: "نمای لحظه‌ای برای نمایش در اتاق پایش و مانیتور مرکزی",
+      description: "نمای لحظه‌ای برای نمایش در اتاق پایش و مانیتور ",
       href: "/monitoring/halls/wallboard",
       icon: BarChart3,
       color: "from-emerald-500 to-teal-500",
@@ -532,9 +537,16 @@ export default function DashboardLayout() {
     {
       title: "نقشه سراها",
       description: "بررسی وضعیت فعالیت،  بر روی نقشه",
-      href: "/console/monitoring/shelter",
+      href: "/console/monitoring/shelters",
       icon: Building2,
       color: "from-sky-500 to-cyan-500",
+    },
+    {
+      title: "نقشه سراها نسخه wallboard",
+      description: "بررسی وضعیت فعالیت،  بر روی نقشه",
+      href: "/monitoring/shelters/wallboard",
+      icon: Building2,
+      color: "from-sky-200 to-cyan-700",
     },
   ];
 

@@ -345,7 +345,7 @@ export default function SheltersExplorer() {
       dir="rtl"
       className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white"
     >
-      <Header />
+  
 
       <section className="border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.02]">
         <div className="mx-auto max-w-400 px-6 py-10 lg:px-8">
@@ -453,44 +453,6 @@ export default function SheltersExplorer() {
   );
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/85 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/85 dark:shadow-none">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-500 text-white">
-            <Home className="h-6 w-6" />
-          </div>
-
-          <div>
-            <div className="text-base font-black text-zinc-950 dark:text-white">
-              سامانه ثبت درخواست اسکان سرای های محله
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-              مشاهده ظرفیت و موقعیت سراها
-            </div>
-          </div>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/request/track"
-            className="hidden rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:inline-flex"
-          >
-            پیگیری درخواست
-          </Link>
-
-          <Link
-            href="/request/new"
-            className="rounded-xl bg-orange-500 px-4 py-2 text-sm font-extrabold text-white transition hover:bg-orange-400"
-          >
-            ثبت درخواست
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function ViewSwitcher({
   viewMode,

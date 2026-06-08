@@ -5,6 +5,8 @@ import NextTopLoader from "nextjs-toploader";
 import localFont from "next/font/local";
 import ThemeProvider from "@/components/theme-provider";
 import Providers from "./providers";
+import Header from "@/components/layouts/Header";
+import FloatingGuideBotLevel2 from "@/components/layouts/FloatingGuideBotLevel2";
 
 export const metadata: Metadata = {
   title: "سامانه اسکان سرای محله",
@@ -41,7 +43,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <NextTopLoader color="oklch(0.606 0.25 292.717)" height={4} />
         <Providers>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <Header />
+            {children}
+            <FloatingGuideBotLevel2/>
+          </ThemeProvider>
         </Providers>
       </body>
 

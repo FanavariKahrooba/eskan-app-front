@@ -30,35 +30,25 @@ export type HallsOverviewTopHall = {
     score?: number;
 };
 
+export type HallsOverviewKpis = {
+    total_halls: number;
+    active_halls: number;
+    inactive_halls: number;
+    halls_with_info: number;
+    halls_without_info: number;
+    halls_with_geo: number;
+    halls_with_missing_geo: number;
+    halls_with_contact: number;
+    halls_with_missing_contact: number;
+    halls_with_manager: number;
+    halls_without_manager: number;
+};
+
 export type HallsOverviewData = {
-    summary: {
-        total_halls: number;
-        active_halls: number;
-        inactive_halls: number;
-        activity_rate: number;
-    };
-    data_quality: {
-        with_coordinates: number;
-        without_coordinates: number;
-        with_contact: number;
-        without_contact: number;
-        with_manager: number;
-        without_manager: number;
-    };
-    infrastructure: {
-        theater: number;
-        workshop: number;
-        sports: number;
-        fire_safety: number;
-    };
-    charts?: {
-        activity?: Array<{ label: string; value: number }>;
-        geo_quality?: Array<{ label: string; value: number }>;
-        data_quality?: Array<{ label: string; value: number }>;
-        infrastructure?: Array<{ label: string; value: number }>;
-    };
+    kpis: HallsOverviewKpis;
     top_halls?: HallsOverviewTopHall[];
     alerts?: HallsOverviewAlert[];
+    data_quality?: unknown;
     [key: string]: unknown;
 };
 
@@ -70,7 +60,7 @@ export type HallsOverviewResponse = {
 
 async function getHallsOverview(
     params: HallsOverviewParams = {},
-): Promise<HallsOverviewData> {
+): Promise<HallsOverviewResponse> {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     if (!baseUrl) {
@@ -91,7 +81,7 @@ async function getHallsOverview(
         searchParams.set("top", String(params.top));
     }
 
-    const url = `${baseUrl}/api/v1/admin/monitoring/halls/overview${searchParams.toString() ? `?${searchParams.toString()}` : ""
+    const url = `${baseUrl}/api/v1/admin/halls/overview${searchParams.toString() ? `?${searchParams.toString()}` : ""
         }`;
 
     const response = await fetch(url, {
@@ -112,7 +102,7 @@ async function getHallsOverview(
         throw new Error("داده‌ای برای مانیتورینگ سراها دریافت نشد");
     }
 
-    return result.data;
+    return result;
 }
 
 export function useHallsOverview(params: HallsOverviewParams = {}) {

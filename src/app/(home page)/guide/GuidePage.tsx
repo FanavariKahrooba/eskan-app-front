@@ -194,7 +194,6 @@ export default function GuidePage() {
       dir="rtl"
       className="min-h-screen bg-slate-100 text-slate-900 dark:bg-zinc-950 dark:text-zinc-100"
     >
-      <Header />
       <HeroSection />
 
       <section className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
@@ -253,45 +252,6 @@ export default function GuidePage() {
   );
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/80">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/20">
-            <Home className="h-5 w-5" />
-          </div>
-
-          <div>
-            <div className="text-base font-black text-slate-950 dark:text-white">
-              سامانه ثبت درخواست اسکان سرای های محله
-            </div>
-            <div className="text-xs text-slate-500 dark:text-zinc-400">
-              راهنمای استفاده
-            </div>
-          </div>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <Link
-            href="/track"
-            className="hidden rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 md:inline-flex dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
-          >
-            پیگیری درخواست
-          </Link>
-
-          <Link
-            href="/request/new"
-            className="rounded-xl border border-orange-600 bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
-          >
-            ثبت درخواست
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
 function HeroSection() {
   return (
     <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-b from-stone-100 via-slate-100 to-slate-100 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950">
@@ -303,27 +263,26 @@ function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          <Link
+          {/* <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-slate-600 transition hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             بازگشت به صفحه اصلی
-          </Link>
+          </Link> */}
 
           <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-sky-300 bg-sky-50 px-4 py-2 text-sm text-sky-700 dark:border-sky-400/20 dark:bg-sky-500/10 dark:text-sky-300">
             <Sparkles className="h-4 w-4" />
             راهنمای کامل استفاده از سامانه
           </div>
 
-          <h1 className="mt-5 max-w-4xl text-3xl font-black leading-tight text-slate-950 md:text-5xl dark:text-white">
+          {/* <h1 className="mt-5 max-w-4xl text-3xl font-black leading-tight text-slate-950 md:text-5xl dark:text-white">
             از بررسی سراها تا ثبت و پیگیری درخواست، همه‌چیز را اینجا ببینید
-          </h1>
+          </h1> */}
 
           <p className="mt-4 max-w-3xl text-sm leading-8 text-slate-700 md:text-base dark:text-zinc-300">
             این صفحه برای آشنایی سریع و دقیق با مسیر استفاده از سامانه طراحی شده
-            است؛ از مشاهده سراها و نقشه گرفته تا ثبت درخواست، دریافت کد رهگیری و
-            پیگیری نتیجه.
+            است؛ از ثبت درخواست، دریافت کد رهگیری و پیگیری نتیجه.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -336,7 +295,7 @@ function HeroSection() {
             </Link>
 
             <Link
-              href="/track"
+              href="/request/track"
               className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 transition hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
             >
               <FileSearch className="h-4 w-4" />
