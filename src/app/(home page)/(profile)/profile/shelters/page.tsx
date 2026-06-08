@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import SheltersExplorer from "./SheltersExplorer";
 
 export const metadata: Metadata = {
-  title: "سراهای قابل اسکان | سامانه اسکان سراهای محله",
+  title: "سراهای قابل اسکان |  سامانه ثبت درخواست اسکان سرای های محله",
   description:
     "در این صفحه می‌توانید سراها و پناهگاه‌های قابل اسکان را مشاهده کنید، ظرفیت کل و ظرفیت خالی را بررسی کنید، وضعیت پذیرش را ببینید و برای اسکان درخواست ثبت کنید.",
   keywords: [
@@ -16,14 +16,14 @@ export const metadata: Metadata = {
     "اسکان آقایان",
     "سامانه سراهای محله",
   ],
-  applicationName: "سامانه اسکان سراهای محله",
+  applicationName: " سامانه ثبت درخواست اسکان سرای های محله",
   openGraph: {
     title: "پناهگاه‌ها و سراهای قابل اسکان",
     description:
       "مشاهده مراکز قابل اسکان، بررسی ظرفیت، وضعیت پذیرش و ثبت درخواست به‌صورت آنلاین.",
     type: "website",
     locale: "fa_IR",
-    siteName: "سامانه اسکان سراهای محله",
+    siteName: " سامانه ثبت درخواست اسکان سرای های محله",
   },
   twitter: {
     card: "summary_large_image",

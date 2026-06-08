@@ -1,259 +1,256 @@
-import useSWR from "swr"
-import axios from "@/lib/axios"
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { deleteCookie, getCookie, setCookie } from "cookies-next"
+'use client'
+
+import useSWR from 'swr'
+import axios from '@/lib/axios'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { setCookie, getCookie, deleteCookie } from 'cookies-next'
 
 interface UseAuthOptions {
   middleware?: string
   redirectIfAuthenticated?: any
 }
-interface LoginProps {
+
+interface LoginOtpProps {
   setErrors: (errors: any[]) => void
   setStatus: (status: any | null) => void
 }
 
-
 export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthOptions = {}) => {
-  // const searchParams = useSearchParams();
-  // eslint-disable-next-line react-hooks/immutability
-  axios.defaults.withCredentials = true
   const router = useRouter()
-  const params = useParams()
 
-  const { data: user, error, mutate } = useSWR('/api/v1/user-side/user', () =>
-    axios
-      .get('/api/v1/user-side/user', { headers: { "Authorization": `Bearer ${getCookie("access-token-user")}` } })
-      .then((res: { data: any }) => res.data)
-      .catch((error: { response: { status: number } }) => {
+  const accessToken = getCookie('access-token') as string | undefined
 
-        if (error.response.status !== 409) throw error
-      }),
+  const { data: user, error, mutate } = useSWR(
+    accessToken ? '/api/user' : null,
+    async () => {
+      const token = getCookie('access-token') as string | undefined
+
+      if (!token) {
+        throw new Error('No token')
+      }
+
+      const res = await axios.get('/api/user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      return res.data
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
+    }
   )
 
-  const csrf = () => axios.get("/sanctum/csrf-cookie")
+  const csrf = () => axios.get('/sanctum/csrf-cookie')
 
-  const register = async ({ setErrors, ...props }: any): Promise<{ success?: boolean; message?: string; errors?: boolean }> => {
+  const registerOtp = async ({
+    setErrors,
+    ...props
+  }: any): Promise<{ success: boolean; sendCode?: boolean; reg?: boolean }> => {
     try {
       await csrf()
       setErrors([])
 
-      const response = await axios.post("/api/v1/user/register", props)
+      const response = await axios.post('/api/v1/admin/otp-request', props)
 
-      switch (response?.data?.message) {
-        case "success": {
-          setCookie("ct_ot", "")
-          deleteCookie("ct_ot")
-          deleteCookie("phone_number")
-          const date = new Date()
-          date.setTime(date.getTime() + 24 * 60 * 60 * 1000)
-          // setCookie('access-token-user', response?.data?.access_token, { expires: date, sameSite: 'strict', path: '/' });
-          setCookie("access-token-user", response.data?.access_token, {
-            expires: date, sameSite: "lax",
-            path: "/"
-          })
-
-          setCookie("toastType", "success")
-          setCookie("toastMessage", "به سایت ما خوش آمدید")
-          await mutate(response.data?.user, false)
-          return { success: true, message: "done" }
-          break
-        }
-        case "Invalid":
-          setCookie("toastType", "fail")
-          setCookie("toastMessage", "کد وارد شده اشتباه است، لطفا دوباره سعی کنید.")
-          return { success: false, message: "Invalid" }
-          break
-        case "Expired":
-          setCookie("toastType", "fail")
-          setCookie("toastMessage", "کد مورد نظر منقضی شده است.")
-          return { success: false, message: "Expired" }
-          break
-        case "fail":
-          if (response?.data?.send_otp == true) {
-            setCookie("toastType", "fail")
-            setCookie("toastMessage", "کد تایید منقضی شد.")
-            // setErrors({ send_code: true })
-            return { success: false, message: "Expired" }
-          } else {
-            setCookie("toastType", "fail")
-            setCookie("toastMessage", response?.data?.message)
-            return { success: false, message: "Expired" }
-          }
-        default:
-          setCookie("toastType", "fail")
-          setCookie("toastMessage", "خطای ناشناخته.")
-          return { success: false, message: "login" }
-      }
-    } catch (error: any) {
-      if (error?.message === "Network Error") {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "ارتباط با سرور برقرار نشد.")
-        return { success: false, message: "login" }
-      } else if (error?.response?.status === 500) {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "خطای داخلی سرور.")
-        return { success: false, message: "login" }
-      } else {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", error?.response?.data?.message)
-        return { success: false, errors: true, message: error?.response?.data?.message }
-      }
-    }
-  }
-
-  const registerOtp = async ({ setErrors, ...props }: any): Promise<{ success: boolean; sendCode?: boolean; reg?: boolean }> => {
-    try {
-      await csrf()
-      setErrors([])
-
-      const response = await axios.post("/api/v1/user/otp-request", props)
       mutate()
 
-      if (response.data.status === "otp_sent") {
-        const expirationDate = new Date();
-        expirationDate.setMinutes(expirationDate.getMinutes() + 5);
-        setCookie("ct_ot", response.data?.user, {
-          expires: expirationDate,
-        })
-        setCookie("ExpTime", expirationDate.toISOString(), {
-          expires: expirationDate
-        });
-        return { success: true }
-      } else if (response.data.status == "user not found") {
+      if (response.data.status === 'success') {
         const expirationDate = new Date()
-        setCookie("phone_number", props.phone_number)
-        expirationDate.setMinutes(expirationDate.getMinutes() + 5)
-        setCookie("ct_ot", response.data?.user, {
+        expirationDate.setMinutes(expirationDate.getMinutes() + 2)
+
+        setCookie('ct_ot', response.data?.user ?? '', {
           expires: expirationDate,
         })
-        setCookie("ExpTime", expirationDate.toISOString(), {
-          expires: expirationDate
-        });
-        setCookie("toastType", "fail")
 
-        setCookie("toastMessage", "کاربر گرامی شماره شما ثبت نشده است لطفا در سایت ثبت نام کنید.")
-        return { success: false, sendCode: true, reg: true }
-      } else if (response?.data?.status === "403") {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "کاربر گرامی شما به این بخش دسترسی ندارید.")
-        return { success: false }
-      } else if (response?.data?.status === "500") {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "ارتباط با سرور برقرار نشد.")
-        return { success: false }
-      } else {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "ارتباط با سرور برقرار نشد.")
+        setCookie('ExpTime', expirationDate.toISOString(), {
+          expires: expirationDate,
+        })
+
+        return { success: true }
+      }
+
+      if (response.data.status === 'user not found') {
+        deleteCookie('phone_number')
+        setCookie('phone_number', props.phone_number)
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'کاربر گرامی شماره شما ثبت نشده است.')
+
         return { success: false }
       }
+
+      if (response.data.status === '403') {
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'کاربر گرامی شما به این بخش دسترسی ندارید.')
+
+        return { success: false }
+      }
+
+      if (response?.data?.status === '500') {
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'ارتباط با سرور برقرار نشد.')
+
+        return { success: false }
+      }
+
+      setCookie('toastType', 'fail')
+      setCookie('toastMessage', 'ارتباط با سرور برقرار نشد.')
+
+      return { success: false }
     } catch (error: any) {
-      if (error?.message === "Network Error") {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "ارتباط با سرور برقرار نشد.")
-        return { success: false }
-      } else if (error?.response?.status === 500) {
-        setCookie("toastType", "fail")
+      if (error?.message === 'Network Error') {
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'ارتباط با سرور برقرار نشد.')
 
-        setCookie("toastMessage", "خطای داخلی سرور.")
-        return { success: false }
-      } else {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "خطای نامشخص در ارتباط با سرور.")
         return { success: false }
       }
+
+      if (error?.response?.status === 500) {
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'خطای داخلی سرور.')
+
+        return { success: false }
+      }
+
+      setCookie('toastType', 'fail')
+      setCookie('toastMessage', 'خطای نامشخص در ارتباط با سرور.')
+
+      return { success: false }
     }
   }
 
-  const VerifyOtp = async ({ setErrors, ...props }: any): Promise<{ success?: boolean; message?: string }> => {
+  const VerifyOtp = async ({
+    setErrors,
+    ...props
+  }: any): Promise<{ success?: boolean; message?: string }> => {
     try {
       await csrf()
       setErrors([])
-      const response = await axios.post("/api/v1/user/verify", props)
-      const { message, access_token, user: userData } = response.data
+
+      const response = await axios.post('/api/v1/admin/verify', props)
+      const { user: userData } = response.data
 
       switch (response?.data?.message) {
-        case "success":
-          setCookie("ct_ot", "")
-          const date = new Date()
-          date.setTime(date.getTime() + 24 * 60 * 60 * 1000)
-          setCookie("access-token-user", response.data?.access_token, {
-            expires: date, sameSite: "lax",
-            path: "/"
+        case 'success': {
+          const expirationDate = new Date()
+          expirationDate.setTime(expirationDate.getTime() + 4 * 60 * 60 * 1000)
+
+          setCookie('ct_ot', '', {
+            expires: new Date(0),
           })
+
+          setCookie('access-token', response.data?.access_token, {
+            expires: expirationDate,
+          })
+
           await mutate(userData, false)
-          setCookie("toastType", "success")
-          setCookie("toastMessage", "به سایت ما خوش آمدید")
 
-          return { success: true, message: "done" }
-          break
-        case "Invalid":
-          setCookie("toastType", "fail")
-          setCookie("toastMessage", "کد وارد شده اشتباه است، لطفا دوباره سعی کنید.")
-          return { success: false, message: "Invalid" }
-          break
-        case "Expired":
-          setCookie("toastType", "fail")
-          setCookie("toastMessage", "کد مورد نظر منقضی شده است.")
-          return { success: false, message: "Expired" }
-          break
+          setCookie('toastType', 'success')
+          setCookie('toastMessage', 'به سامانه جامع محلات خوش آمدید')
+
+          return { success: true, message: 'done' }
+        }
+
+        case 'Invalid':
+          setCookie('toastType', 'fail')
+          setCookie('toastMessage', 'کد وارد شده اشتباه است، لطفا دوباره سعی کنید.')
+
+          return { success: false, message: 'Invalid' }
+
+        case 'Expired':
+          setCookie('toastType', 'fail')
+          setCookie('toastMessage', 'کد مورد نظر منقضی شده است.')
+
+          return { success: false, message: 'Expired' }
+
         default:
-          setCookie("toastType", "fail")
-          setCookie("toastMessage", "خطای ناشناخته.")
-          return { success: false, message: "login" }
+          setCookie('toastType', 'fail')
+          setCookie('toastMessage', 'خطای ناشناخته.')
+
+          return { success: false, message: 'login' }
+      }
+    } catch (error: any) {
+      if (error?.message === 'Network Error') {
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'ارتباط با سرور برقرار نشد.')
+
+        return { success: false, message: 'login' }
       }
 
-      // })
-      // .catch((error: { response: { status: number; data: { errors: any } } }) => {
-      //     if (error.response.status !== 422) throw error
-      //     setCookie("toastType", "fail");
-      //     setCookie("toastMessage", error.response.data.errors);
-      //     setErrors(error.response.data.errors)
-      //     return { success: false, message: 'login' }
-      // })
-    } catch (error: any) {
-      // console.log(error)
-      if (error?.message === "Network Error") {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "ارتباط با سرور برقرار نشد.")
-        return { success: false, message: "login" }
-      } else if (error?.response?.status === 500) {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "خطای داخلی سرور.")
-        return { success: false, message: "login" }
-      } else {
-        setCookie("toastType", "fail")
-        setCookie("toastMessage", "خطای نامشخص در ارتباط با سرور.")
-        return { success: false, message: "login" }
+      if (error?.response?.status === 500) {
+        setCookie('toastType', 'fail')
+        setCookie('toastMessage', 'خطای داخلی سرور.')
+
+        return { success: false, message: 'login' }
       }
+
+      setCookie('toastType', 'fail')
+      setCookie('toastMessage', 'خطای نامشخص در ارتباط با سرور.')
+
+      return { success: false, message: 'login' }
     }
+  }
+
+  const loginOtp = async ({
+    setErrors,
+    setStatus,
+    ...props
+  }: LoginOtpProps): Promise<void> => {
+    await csrf()
+
+    setErrors([])
+    setStatus(null)
+
+    await axios
+      .post('/api/v1/admin/otp-request', props)
+      .then(() => mutate())
+      .catch((error: { response: { status: number; data: { errors: any[] } } }) => {
+        if (error.response.status !== 422) {
+          throw error
+        }
+
+        setErrors(error.response.data.errors)
+      })
+
+    router.push('/v1/admin/dashboard')
   }
 
   const logout = async () => {
-    if (!error) {
-      await axios.post("/api/v1/user/logout").then(() => mutate())
+    const token = getCookie('access-token') as string | undefined
+
+    if (token) {
+      await axios.post('/api/logout').catch(() => null)
     }
 
-    window.location.pathname = "/login-otp"
+    deleteCookie('access-token')
+    deleteCookie('ct_ot')
+    deleteCookie('ExpTime')
+
+    await mutate(null, false)
+
+    router.push('/login-otp')
   }
 
   useEffect(() => {
-    if (middleware === 'guest' && redirectIfAuthenticated && user)
+    if (middleware === 'guest' && redirectIfAuthenticated && user) {
       router.push(redirectIfAuthenticated)
-    if (
-      window.location.pathname === '/api/v1/user/verify-email' &&
-      user?.email_verified_at
-    )
-      router.push(redirectIfAuthenticated)
-    if (middleware === 'auth' && error) logout()
-  }, [user, error, middleware, router, redirectIfAuthenticated, logout])
+    }
+
+    if (middleware === 'auth' && error && !user) {
+      logout()
+    }
+  }, [middleware, redirectIfAuthenticated, user, error])
 
   return {
-    user,
     isAuthenticated: !!user,
-    register,
-    logout,
+    user,
+    loginOtp,
     registerOtp,
-    VerifyOtp
+    VerifyOtp,
+    logout,
+    loading: !!accessToken && !user && !error,
   }
 }

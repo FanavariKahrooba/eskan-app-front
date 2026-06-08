@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import SheltersExplorerSection from "./SheltersExplorerSection";
 import HeroCapacitySection from "./HeroCapacitySection";
+import HeroSlider from "./new/HeroSlider";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -120,7 +121,8 @@ export default function PublicHomePage() {
       className="min-h-screen bg-slate-100 text-slate-900 dark:bg-zinc-950 dark:text-zinc-100"
     >
       <Header />
-      <HeroCapacitySection />
+      <HeroSlider />
+      {/* <HeroCapacitySection /> */}
       {/* <section className="relative overflow-hidden border-b border-slate-300 bg-gradient-to-br from-slate-100 via-stone-100 to-orange-50 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,146,60,0.16),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_32%)]" />
 
@@ -234,10 +236,10 @@ export default function PublicHomePage() {
           </div>
         </div>
       </section> */}
-      <SheltersExplorerSection />
+      {/* <SheltersExplorerSection /> */}
       <MainActionsSection />
       <HowItWorksSection />
-      <CapacityOverviewSection />
+      {/* <CapacityOverviewSection /> */}
       <NoticesSection />
       <FAQSection />
       <FooterCTA />
@@ -255,7 +257,7 @@ function Header() {
           </div>
           <div>
             <div className="text-base font-black text-slate-950 dark:text-white">
-              سامانه اسکان سراهای محله
+              سامانه ثبت درخواست اسکان سرای های محله
             </div>
             <div className="text-xs text-slate-500 dark:text-zinc-400">
               مدیریت ظرفیت، درخواست و پذیرش
@@ -264,12 +266,12 @@ function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm text-slate-700 dark:text-zinc-300 md:flex">
-          <Link
+          {/* <Link
             href="/shelters"
             className="transition hover:text-orange-700 dark:hover:text-orange-300"
           >
             سراهای فعال
-          </Link>
+          </Link> */}
           <Link
             href="/guide"
             className="transition hover:text-orange-700 dark:hover:text-orange-300"
@@ -288,7 +290,7 @@ function Header() {
           <ThemeToggle />
 
           <Link
-            href="/login"
+            href="/login-otp"
             className="hidden items-center gap-2 rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-bold text-slate-800 shadow-sm shadow-slate-300/30 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-800 dark:border-white/10 dark:bg-white/5 dark:text-white dark:shadow-black/20 dark:hover:bg-white/10 dark:hover:text-orange-300 sm:inline-flex"
           >
             <LogIn className="h-4 w-4" />

@@ -1,13 +1,14 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import axios from "axios";
+import L from "leaflet";
 import Link from "next/link";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-import { useQuery } from "@tanstack/react-query";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
 import {
   ArrowLeft,
   Bed,
@@ -21,23 +22,18 @@ import {
   LocateFixed,
   Map,
   MapPin,
+  Navigation,
   Phone,
   Search,
   ShieldCheck,
   Users,
   X,
+  XCircle,
 } from "lucide-react";
 
-import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { Modal } from "@/components/ui/modal";
+import { getDistrictList, getRegionList } from "@/actions/district/district";
 import { useModal } from "@/hooks/useModal";
-import SheltersExplorerLoading from "./SheltersExplorerLoading";
-import EmptyState from "./EmptyState";
-
-const MapView = dynamic(() => import("./MapView"), {
-  ssr: false,
-  loading: () => <SheltersExplorerLoading />,
-});
+import { Modal } from "@/components/ui/modal";
 
 type ShelterStatus = "active" | "limited" | "full";
 type ShelterGenderType = "men" | "women" | "family" | "mixed";
@@ -87,6 +83,7 @@ type ApiHallItem = {
     number_of_rooms?: number | string;
     number_of_computer_workshops?: number | string;
     year_of_manufacture?: number | string;
+
     total_capacity?: number | string;
     free_capacity?: number | string;
     reserved_capacity?: number | string;
@@ -96,7 +93,7 @@ type ApiHallItem = {
   };
 };
 
-export type Shelter = {
+type Shelter = {
   id: number;
   name: string;
   manager: string;
@@ -124,6 +121,15 @@ type DetailResponse = {
   data: ApiHallItem;
 };
 
+const customIcon = new L.Icon({
+  iconUrl: "/assets/static/icon-location.png",
+  iconSize: [22, 34],
+  iconAnchor: [11, 34],
+  popupAnchor: [0, -30],
+});
+
+const defaultCenter: [number, number] = [35.6892, 51.389];
+
 export default function SheltersExplorer() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -137,44 +143,18 @@ export default function SheltersExplorer() {
   const [regions, setRegions] = useState<RegionItem[]>([]);
   const [districts, setDistricts] = useState<DistrictItem[]>([]);
 
+  const [shelters, setShelters] = useState<Shelter[]>([]);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
-  const [selectedHallDetails, setSelectedHallDetails] =
-    useState<DetailResponse | null>(null);
 
+  const [isLoading, setIsLoading] = useState(true);
   const [isRegionsLoading, setIsRegionsLoading] = useState(false);
   const [isDistrictsLoading, setIsDistrictsLoading] = useState(false);
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const [selectedHallDetails, setSelectedHallDetails] =
+    useState<DetailResponse | null>(null);
 
-  const debouncedSearch = useDebouncedValue(search, 350);
   const { isOpen, openModal, closeModal } = useModal();
-
-  const {
-    data: shelters = [],
-    isLoading,
-    isFetching,
-    isError,
-  } = useQuery<Shelter[]>({
-    queryKey: ["shelter-explorer", region, district, debouncedSearch],
-    queryFn: async () => {
-      const { data } = await axios.get(
-        "/api/neighborhood-halls/shelter-explorer",
-        {
-          params: {
-            region,
-            district,
-            q: debouncedSearch,
-          },
-        },
-      );
-
-      const list: ApiHallItem[] = Array.isArray(data?.data) ? data.data : [];
-      return list.map(adaptHall).filter(Boolean) as Shelter[];
-    },
-    placeholderData: (previousData) => previousData,
-  });
 
   useEffect(() => {
     let mounted = true;
@@ -182,8 +162,10 @@ export default function SheltersExplorer() {
     async function loadRegions() {
       try {
         setIsRegionsLoading(true);
-        const { data } = await axios.get("/api/regions");
+        const data = await getRegionList();
+
         if (!mounted) return;
+
         setRegions(Array.isArray(data?.data) ? data.data : []);
       } catch (error) {
         console.error("Error loading regions:", error);
@@ -212,11 +194,10 @@ export default function SheltersExplorer() {
 
       try {
         setIsDistrictsLoading(true);
-        const { data } = await axios.get(`/api/districts?regionId=${region}`, {
-          params: { region_id: region },
-        });
+        const data = await getDistrictList(region);
 
         if (!mounted) return;
+
         setDistricts(Array.isArray(data?.data) ? data.data : []);
       } catch (error) {
         console.error("Error loading districts:", error);
@@ -234,20 +215,56 @@ export default function SheltersExplorer() {
   }, [region]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [
-    search,
-    debouncedSearch,
-    region,
-    district,
-    status,
-    genderType,
-    admissionType,
-  ]);
+    let mounted = true;
+
+    async function fetchShelters() {
+      try {
+        setIsLoading(true);
+
+        const { data } = await axios.get("/api/neighborhood-halls/user", {
+          params: {
+            region,
+            district,
+            q: search,
+          },
+        });
+
+        if (!mounted) return;
+
+        const list: ApiHallItem[] = Array.isArray(data?.data) ? data.data : [];
+        const adapted = list.map(adaptHall).filter(Boolean) as Shelter[];
+
+        setShelters(adapted);
+
+        if (!selectedShelter && adapted.length > 0) {
+          setSelectedShelter(adapted[0]);
+        }
+
+        if (
+          selectedShelter &&
+          !adapted.some((item) => item.id === selectedShelter.id)
+        ) {
+          setSelectedShelter(adapted[0] ?? null);
+        }
+      } catch (error) {
+        console.error("Error fetching shelters:", error);
+        if (mounted) setShelters([]);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    }
+
+    const timer = setTimeout(fetchShelters, 350);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, [search, region, district]);
 
   const filteredShelters = useMemo(() => {
     return shelters.filter((shelter) => {
-      const text = debouncedSearch.trim();
+      const text = search.trim();
 
       const matchesSearch =
         !text ||
@@ -271,7 +288,7 @@ export default function SheltersExplorer() {
         matchesSearch && matchesStatus && matchesGender && matchesAdmission
       );
     });
-  }, [shelters, debouncedSearch, status, genderType, admissionType]);
+  }, [shelters, search, status, genderType, admissionType]);
 
   const totalFree = filteredShelters.reduce(
     (sum, shelter) => sum + shelter.freeCapacity,
@@ -283,33 +300,6 @@ export default function SheltersExplorer() {
     0,
   );
 
-  const totalPages = Math.max(1, Math.ceil(filteredShelters.length / pageSize));
-
-  const paginatedShelters = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredShelters.slice(start, start + pageSize);
-  }, [filteredShelters, currentPage]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  useEffect(() => {
-    if (!selectedShelter && filteredShelters.length > 0) {
-      setSelectedShelter(filteredShelters[0]);
-      return;
-    }
-
-    if (
-      selectedShelter &&
-      !filteredShelters.some((item) => item.id === selectedShelter.id)
-    ) {
-      setSelectedShelter(filteredShelters[0] ?? null);
-    }
-  }, [filteredShelters, selectedShelter]);
-
   const resetFilters = () => {
     setSearch("");
     setRegion("");
@@ -317,7 +307,6 @@ export default function SheltersExplorer() {
     setStatus("all");
     setGenderType("all");
     setAdmissionType("all");
-    setCurrentPage(1);
   };
 
   const fetchHallDetails = async (id: number) => {
@@ -325,9 +314,7 @@ export default function SheltersExplorer() {
       setIsDetailsLoading(true);
       setSelectedHallDetails(null);
 
-      const { data } = await axios.get(
-        `/api/neighborhood-halls/shelter-explorer/${id}`,
-      );
+      const { data } = await axios.get(`/api/neighborhood-halls/user/${id}`);
 
       setSelectedHallDetails(data);
       openModal();
@@ -341,36 +328,35 @@ export default function SheltersExplorer() {
   };
 
   return (
-    <main
-      dir="rtl"
-      className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white"
-    >
+    <main dir="rtl" className="min-h-screen bg-zinc-950 text-white">
       <Header />
 
-      <section className="border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.02]">
+      <section className="border-b border-white/10 bg-white/[0.02]">
         <div className="mx-auto max-w-400 px-6 py-10 lg:px-8">
           <div className="flex flex-col gap-4">
             <Link
               href="/"
-              className="inline-flex w-fit items-center gap-2 text-sm text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
+              className="inline-flex w-fit items-center gap-2 text-sm text-zinc-400 transition hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
               بازگشت به صفحه اصلی
             </Link>
 
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-sm text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 py-1.5 text-sm text-emerald-300">
               <MapPin className="h-4 w-4" />
               سراهای فعال و ظرفیت‌ها
             </span>
 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h1 className="text-3xl font-black text-zinc-950 md:text-5xl dark:text-white">
+                <h1 className="text-3xl font-black text-white md:text-5xl">
                   مشاهده سراهای فعال
                 </h1>
 
-                <p className="mt-4 max-w-3xl text-sm leading-8 text-zinc-600 md:text-base dark:text-zinc-400">
-                  از این بخش می‌توانید سراهای فعال را مشاهده کنید،
+                <p className="mt-4 max-w-3xl text-sm leading-8 text-zinc-400 md:text-base">
+                  از این بخش می‌توانید سراهای فعال را از API واقعی مشاهده کنید،
+                  روی نقشه ببینید، جزئیات هر سرا را بررسی کنید و مستقیم برای
+                  همان سرا درخواست ثبت کنید.
                 </p>
               </div>
 
@@ -419,17 +405,10 @@ export default function SheltersExplorer() {
           <section className="min-w-0">
             {isLoading ? (
               <LoadingState />
-            ) : isError ? (
-              <ErrorState />
             ) : viewMode === "list" ? (
               <ListView
-                shelters={paginatedShelters}
-                totalCount={filteredShelters.length}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                shelters={filteredShelters}
                 onDetails={fetchHallDetails}
-                isFetching={isFetching}
               />
             ) : (
               <MapView
@@ -455,7 +434,7 @@ export default function SheltersExplorer() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/85 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/85 dark:shadow-none">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-500 text-white">
@@ -463,10 +442,10 @@ function Header() {
           </div>
 
           <div>
-            <div className="text-base font-black text-zinc-950 dark:text-white">
-              سامانه اسکان سراهای محله
+            <div className="text-base font-black text-white">
+              سامانه ثبت درخواست اسکان سرای های محله
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="text-xs text-zinc-400">
               مشاهده ظرفیت و موقعیت سراها
             </div>
           </div>
@@ -475,7 +454,7 @@ function Header() {
         <div className="flex items-center gap-2">
           <Link
             href="/request/track"
-            className="hidden rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-bold text-zinc-800 transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:inline-flex"
+            className="hidden rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/10 sm:inline-flex"
           >
             پیگیری درخواست
           </Link>
@@ -500,14 +479,14 @@ function ViewSwitcher({
   setViewMode: (value: ViewMode) => void;
 }) {
   return (
-    <div className="inline-flex w-fit rounded-2xl border border-zinc-200 bg-white p-1 shadow-sm dark:border-white/10 dark:bg-zinc-900/80 dark:shadow-none">
+    <div className="inline-flex w-fit rounded-2xl border border-white/10 bg-zinc-900/80 p-1">
       <button
         type="button"
         onClick={() => setViewMode("list")}
         className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${
           viewMode === "list"
             ? "bg-orange-500 text-white"
-            : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+            : "text-zinc-400 hover:text-white"
         }`}
       >
         <List className="h-4 w-4" />
@@ -520,7 +499,7 @@ function ViewSwitcher({
         className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition ${
           viewMode === "map"
             ? "bg-orange-500 text-white"
-            : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+            : "text-zinc-400 hover:text-white"
         }`}
       >
         <Map className="h-4 w-4" />
@@ -579,23 +558,17 @@ function StatCard({
   color: "orange" | "emerald" | "sky";
 }) {
   const colorClass = {
-    orange:
-      "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-400/20 dark:bg-orange-500/10 dark:text-orange-300",
-    emerald:
-      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300",
-    sky: "border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/20 dark:bg-sky-500/10 dark:text-sky-300",
+    orange: "border-orange-400/20 bg-orange-500/10 text-orange-300",
+    emerald: "border-emerald-400/20 bg-emerald-500/10 text-emerald-300",
+    sky: "border-sky-400/20 bg-sky-500/10 text-sky-300",
   }[color];
 
   return (
-    <div className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+    <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">
-            {title}
-          </div>
-          <div className="mt-2 text-3xl font-black text-zinc-950 dark:text-white">
-            {value}
-          </div>
+          <div className="text-sm text-zinc-400">{title}</div>
+          <div className="mt-2 text-3xl font-black text-white">{value}</div>
         </div>
 
         <div className={`rounded-2xl border p-3 ${colorClass}`}>{icon}</div>
@@ -642,19 +615,17 @@ function FiltersPanel({
   isDistrictsLoading: boolean;
 }) {
   return (
-    <div className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
-      <div className="mb-5 flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-white/10">
+    <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
+      <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-3 text-orange-700 dark:border-orange-400/20 dark:bg-orange-500/10 dark:text-orange-300">
+          <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-3 text-orange-300">
             <Filter className="h-5 w-5" />
           </div>
 
           <div>
-            <h2 className="font-extrabold text-zinc-950 dark:text-white">
-              فیلترها
-            </h2>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
-              فیلتر و جستجوی سریع
+            <h2 className="font-extrabold text-white">فیلترها</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              فیلتر از API و جستجوی سریع
             </p>
           </div>
         </div>
@@ -662,7 +633,7 @@ function FiltersPanel({
         <button
           type="button"
           onClick={resetFilters}
-          className="inline-flex items-center gap-1 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-bold text-zinc-700 transition hover:bg-zinc-100 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10"
+          className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-zinc-300 transition hover:bg-white/10"
         >
           <X className="h-3.5 w-3.5" />
           حذف
@@ -671,17 +642,17 @@ function FiltersPanel({
 
       <div className="space-y-4">
         <label className="block">
-          <span className="mb-2 block text-sm font-bold text-zinc-800 dark:text-zinc-200">
+          <span className="mb-2 block text-sm font-bold text-zinc-200">
             جستجو
           </span>
 
           <div className="relative">
-            <Search className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
+            <Search className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="نام سرا، مدیر، محله..."
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-4 pr-11 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-400/60  dark:border-white/10 dark:bg-zinc-950/70 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-orange-400/40"
+              className="w-full rounded-2xl border border-white/10 bg-zinc-950/70 py-3 pl-4 pr-11 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-orange-400/40"
             />
           </div>
         </label>
@@ -776,7 +747,7 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-800 dark:text-zinc-200">
+      <span className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-200">
         {label}
         {loading && (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-500" />
@@ -787,13 +758,13 @@ function SelectField({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-orange-400/60  disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-zinc-950/70 dark:text-white dark:focus:border-orange-400/40"
+        className="w-full rounded-2xl border border-white/10 bg-zinc-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-orange-400/40 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {options.map((option) => (
           <option
             key={`${label}-${option.value}`}
             value={option.value}
-            className="bg-white text-zinc-900 dark:bg-zinc-900 dark:text-white"
+            className="bg-zinc-900 text-white"
           >
             {option.label}
           </option>
@@ -805,60 +776,35 @@ function SelectField({
 
 function ListView({
   shelters,
-  totalCount,
-  currentPage,
-  totalPages,
-  onPageChange,
   onDetails,
-  isFetching,
 }: {
   shelters: Shelter[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
   onDetails: (id: number) => void;
-  isFetching?: boolean;
 }) {
-  if (totalCount === 0) {
+  if (shelters.length === 0) {
     return <EmptyState />;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-2 rounded-[24px] border border-zinc-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 rounded-[24px] border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-extrabold text-zinc-950 dark:text-white">
-            نتایج جستجو
-          </h2>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {totalCount.toLocaleString("fa-IR")} سرا مطابق فیلترهای انتخابی یافت
-            شد.
+          <h2 className="font-extrabold text-white">نتایج جستجو</h2>
+          <p className="mt-1 text-sm text-zinc-400">
+            {shelters.length.toLocaleString("fa-IR")} سرا مطابق فیلترهای انتخابی
+            یافت شد.
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          {isFetching ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Layers className="h-4 w-4" />
-          )}
-          <span>
-            صفحه {currentPage.toLocaleString("fa-IR")} از{" "}
-            {totalPages.toLocaleString("fa-IR")}
-          </span>
+        <div className="inline-flex items-center gap-2 text-sm text-zinc-400">
+          <Layers className="h-4 w-4" />
+          دریافت‌شده از API سراهای محله
         </div>
       </div>
 
       {shelters.map((shelter) => (
         <ShelterCard key={shelter.id} shelter={shelter} onDetails={onDetails} />
       ))}
-
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
     </div>
   );
 }
@@ -880,14 +826,12 @@ function ShelterCard({
       : 0;
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-sm transition hover:border-orange-300 hover:bg-orange-50/30 dark:border-white/10 dark:bg-white/5 dark:shadow-none dark:hover:border-orange-400/20 dark:hover:bg-white/[0.07]">
+    <article className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5 transition hover:border-orange-400/20 hover:bg-white/[0.07]">
       <div className="p-5 md:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-xl font-black text-zinc-950 dark:text-white">
-                {shelter.name}
-              </h3>
+              <h3 className="text-xl font-black text-white">{shelter.name}</h3>
 
               <span
                 className={`rounded-full border px-3 py-1 text-xs font-bold ${statusConfig.badgeClass}`}
@@ -895,28 +839,33 @@ function ShelterCard({
                 {statusConfig.label}
               </span>
 
-              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-white/10 dark:bg-zinc-950/50 dark:text-zinc-300">
+              <span className="rounded-full border border-white/10 bg-zinc-950/50 px-3 py-1 text-xs font-bold text-zinc-300">
                 {getGenderLabel(shelter.genderType)}
               </span>
 
-              <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-bold text-zinc-700 dark:border-white/10 dark:bg-zinc-950/50 dark:text-zinc-300">
+              <span className="rounded-full border border-white/10 bg-zinc-950/50 px-3 py-1 text-xs font-bold text-zinc-300">
                 {getAdmissionLabel(shelter.admissionType)}
               </span>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-400">
               <span className="inline-flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-orange-500 dark:text-orange-300" />
+                <MapPin className="h-4 w-4 text-orange-300" />
                 {shelter.region}، {shelter.district}
               </span>
 
               <span className="inline-flex items-center gap-2">
-                <Phone className="h-4 w-4 text-emerald-500 dark:text-emerald-300" />
+                <Users className="h-4 w-4 text-sky-300" />
+                مدیر: {shelter.manager}
+              </span>
+
+              <span className="inline-flex items-center gap-2">
+                <Phone className="h-4 w-4 text-emerald-300" />
                 {shelter.phone}
               </span>
             </div>
 
-            <p className="mt-3 text-sm leading-7 text-zinc-600 dark:text-zinc-400">
+            <p className="mt-3 text-sm leading-7 text-zinc-400">
               {shelter.address}
             </p>
 
@@ -924,7 +873,7 @@ function ShelterCard({
               {shelter.facilities.map((facility) => (
                 <span
                   key={facility}
-                  className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-700 dark:border-white/10 dark:bg-zinc-950/60 dark:text-zinc-300"
+                  className="rounded-full border border-white/10 bg-zinc-950/60 px-3 py-1 text-xs text-zinc-300"
                 >
                   {facility}
                 </span>
@@ -942,15 +891,13 @@ function ShelterCard({
 
         <div className="mt-6">
           <div className="mb-2 flex items-center justify-between text-xs">
-            <span className="text-zinc-600 dark:text-zinc-400">
-              میزان اشغال ظرفیت
-            </span>
-            <span className="font-bold text-zinc-950 dark:text-white">
+            <span className="text-zinc-400">میزان اشغال ظرفیت</span>
+            <span className="font-bold text-white">
               {occupancyPercent.toLocaleString("fa-IR")}٪
             </span>
           </div>
 
-          <div className="h-3 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-900">
+          <div className="h-3 overflow-hidden rounded-full bg-zinc-900">
             <div
               className={`h-full rounded-full ${statusConfig.progressClass}`}
               style={{ width: `${occupancyPercent}%` }}
@@ -959,13 +906,10 @@ function ShelterCard({
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
             <LocateFixed className="h-4 w-4" />
             مختصات:
-            <span
-              dir="ltr"
-              className="font-bold text-zinc-800 dark:text-zinc-200"
-            >
+            <span dir="ltr" className="font-bold text-zinc-200">
               {shelter.lat}, {shelter.lng}
             </span>
           </div>
@@ -974,7 +918,7 @@ function ShelterCard({
             <button
               type="button"
               onClick={() => onDetails(shelter.id)}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-extrabold text-sky-700 transition hover:bg-sky-100 dark:border-sky-400/20 dark:bg-sky-500/10 dark:text-sky-200 dark:hover:bg-sky-500/20"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-5 py-3 text-sm font-extrabold text-sky-200 transition hover:bg-sky-500/20"
             >
               جزئیات کامل
             </button>
@@ -993,99 +937,7 @@ function ShelterCard({
   );
 }
 
-function Pagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-
-  const pages = buildPagination(currentPage, totalPages);
-
-  return (
-    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
-      >
-        قبلی
-      </button>
-
-      {pages.map((item, index) =>
-        item === "..." ? (
-          <span
-            key={`ellipsis-${index}`}
-            className="px-2 text-sm text-zinc-500 dark:text-zinc-400"
-          >
-            ...
-          </span>
-        ) : (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onPageChange(item)}
-            className={`min-w-10 rounded-xl border px-3 py-2 text-sm font-bold transition ${
-              item === currentPage
-                ? "border-orange-500 bg-orange-500 text-white"
-                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
-            }`}
-          >
-            {item.toLocaleString("fa-IR")}
-          </button>
-        ),
-      )}
-
-      <button
-        type="button"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
-      >
-        بعدی
-      </button>
-    </div>
-  );
-}
-
-function buildPagination(currentPage: number, totalPages: number) {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, index) => index + 1);
-  }
-
-  if (currentPage <= 4) {
-    return [1, 2, 3, 4, 5, "...", totalPages] as const;
-  }
-
-  if (currentPage >= totalPages - 3) {
-    return [
-      1,
-      "...",
-      totalPages - 4,
-      totalPages - 3,
-      totalPages - 2,
-      totalPages - 1,
-      totalPages,
-    ] as const;
-  }
-
-  return [
-    1,
-    "...",
-    currentPage - 1,
-    currentPage,
-    currentPage + 1,
-    "...",
-    totalPages,
-  ] as const;
-}
-
-export function MiniStat({
+function MiniStat({
   label,
   value,
   green,
@@ -1095,13 +947,11 @@ export function MiniStat({
   green?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-zinc-950/60">
-      <div className="text-xs text-zinc-500 dark:text-zinc-500">{label}</div>
+    <div className="rounded-2xl border border-white/10 bg-zinc-950/60 p-4">
+      <div className="text-xs text-zinc-500">{label}</div>
       <div
         className={`mt-2 text-2xl font-black ${
-          green
-            ? "text-emerald-600 dark:text-emerald-300"
-            : "text-zinc-950 dark:text-white"
+          green ? "text-emerald-300" : "text-white"
         }`}
       >
         {value.toLocaleString("fa-IR")}
@@ -1110,20 +960,285 @@ export function MiniStat({
   );
 }
 
+function MapView({
+  shelters,
+  selectedShelter,
+  setSelectedShelter,
+  onDetails,
+}: {
+  shelters: Shelter[];
+  selectedShelter: Shelter | null;
+  setSelectedShelter: (shelter: Shelter) => void;
+  onDetails: (id: number) => void;
+}) {
+  if (shelters.length === 0) {
+    return <EmptyState />;
+  }
+
+  const center: [number, number] = selectedShelter
+    ? [selectedShelter.lat, selectedShelter.lng]
+    : defaultCenter;
+
+  return (
+    <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+      <div className="overflow-hidden rounded-[32px] border border-white/10 bg-white/5 p-3">
+        <div className="mb-3 flex flex-col gap-3 px-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-extrabold text-white">نقشه سراها</h2>
+            <p className="mt-1 text-xs text-zinc-400">
+              نقاط از API واقعی خوانده می‌شوند. روی هر نشانگر کلیک کنید.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-300">
+            <MapPin className="h-3.5 w-3.5" />
+            {shelters.length.toLocaleString("fa-IR")} نقطه
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-[24px]">
+          <div className="absolute left-4 top-4 z-[500] flex flex-col gap-2">
+            <MapControl icon={<Navigation className="h-4 w-4" />} />
+            <MapControl icon={<LocateFixed className="h-4 w-4" />} />
+            <MapControl icon={<Layers className="h-4 w-4" />} />
+          </div>
+
+          <MapContainer
+            center={center}
+            zoom={12}
+            className="z-[9] h-[700px] w-full max-h-[1000px]"
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <FlyToSelected shelter={selectedShelter} />
+
+            {shelters.map((shelter) => {
+              const statusConfig = getStatusConfig(shelter.status);
+
+              return (
+                <Marker
+                  key={shelter.id}
+                  position={[shelter.lat, shelter.lng]}
+                  icon={customIcon}
+                  eventHandlers={{
+                    click: () => setSelectedShelter(shelter),
+                  }}
+                >
+                  <Popup>
+                    <div dir="rtl" className="w-[240px] text-right">
+                      <div className="overflow-hidden rounded-xl border">
+                        <Image
+                          src="/assets/background/2.jpg"
+                          alt={shelter.name}
+                          width={500}
+                          height={500}
+                          className="h-[115px] w-full object-cover"
+                        />
+                      </div>
+
+                      <h3 className="mt-3 text-base font-black text-gray-900">
+                        {shelter.name}
+                      </h3>
+
+                      <p className="mt-1 text-xs leading-6 text-gray-600">
+                        {shelter.region}، {shelter.district}
+                      </p>
+
+                      <div
+                        className={`mt-2 inline-flex rounded-full border px-2 py-1 text-xs font-bold ${statusConfig.popupBadgeClass}`}
+                      >
+                        {statusConfig.label}
+                      </div>
+
+                      <div className="mt-3 grid gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onDetails(shelter.id)}
+                          className="w-full rounded-lg bg-sky-600 px-3 py-2 text-sm font-bold text-white hover:bg-sky-700"
+                        >
+                          جزئیات کامل
+                        </button>
+
+                        <Link
+                          href={`/neighborhood-hall/profile/${shelter.id}`}
+                          target="_blank"
+                          className="w-full rounded-lg bg-blue-600 px-3 py-2 text-center text-sm font-bold text-white hover:bg-blue-700"
+                        >
+                          مشاهده پروفایل
+                        </Link>
+
+                        <Link
+                          href={`/request/new?shelterId=${shelter.id}`}
+                          className="w-full rounded-lg bg-orange-500 px-3 py-2 text-center text-sm font-bold text-white hover:bg-orange-600"
+                        >
+                          ثبت درخواست برای این سرا
+                        </Link>
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MapContainer>
+        </div>
+      </div>
+
+      <div className="space-y-5">
+        {selectedShelter ? (
+          <SelectedShelterPanel
+            shelter={selectedShelter}
+            onDetails={onDetails}
+          />
+        ) : (
+          <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 text-sm text-zinc-400">
+            یک نقطه روی نقشه را انتخاب کنید.
+          </div>
+        )}
+
+        <MapLegend />
+      </div>
+    </div>
+  );
+}
+
+function FlyToSelected({ shelter }: { shelter: Shelter | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!shelter) return;
+    map.flyTo([shelter.lat, shelter.lng], 14, {
+      duration: 0.8,
+    });
+  }, [shelter, map]);
+
+  return null;
+}
+
+function MapControl({ icon }: { icon: ReactNode }) {
+  return (
+    <button
+      type="button"
+      className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-zinc-950/80 text-zinc-300 shadow-xl backdrop-blur-xl transition hover:bg-white/10 hover:text-white"
+    >
+      {icon}
+    </button>
+  );
+}
+
+function SelectedShelterPanel({
+  shelter,
+  onDetails,
+}: {
+  shelter: Shelter;
+  onDetails: (id: number) => void;
+}) {
+  const statusConfig = getStatusConfig(shelter.status);
+
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/5 p-5">
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-xl font-black text-white">{shelter.name}</h3>
+          <p className="mt-2 text-sm text-zinc-400">
+            {shelter.region}، {shelter.district}
+          </p>
+        </div>
+
+        <span
+          className={`rounded-full border px-3 py-1 text-xs font-bold ${statusConfig.badgeClass}`}
+        >
+          {statusConfig.label}
+        </span>
+      </div>
+
+      <p className="text-sm leading-7 text-zinc-300">{shelter.address}</p>
+
+      <div className="mt-5 grid grid-cols-2 gap-3">
+        <MiniStat label="کل ظرفیت" value={shelter.totalCapacity} />
+        <MiniStat label="ظرفیت خالی" value={shelter.freeCapacity} green />
+        <MiniStat label="رزرو" value={shelter.reservedCapacity} />
+        <MiniStat label="اشغال‌شده" value={shelter.occupiedCapacity} />
+      </div>
+
+      <div className="mt-5 space-y-3">
+        <InfoRow label="مدیر" value={shelter.manager} />
+        <InfoRow
+          label="گروه اسکان"
+          value={getGenderLabel(shelter.genderType)}
+        />
+        <InfoRow
+          label="نوع پذیرش"
+          value={getAdmissionLabel(shelter.admissionType)}
+        />
+        <InfoRow label="شماره تماس" value={shelter.phone} />
+        <InfoRow label="مختصات" value={`${shelter.lat}, ${shelter.lng}`} />
+      </div>
+
+      <div className="mt-5 grid gap-2">
+        <button
+          type="button"
+          onClick={() => onDetails(shelter.id)}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-sky-400/20 bg-sky-500/10 px-5 py-3 text-sm font-extrabold text-sky-200 transition hover:bg-sky-500/20"
+        >
+          جزئیات کامل سرا
+        </button>
+
+        <Link
+          href={`/request/new?shelterId=${shelter.id}`}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-orange-400"
+        >
+          انتخاب این سرا برای درخواست
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-zinc-950/50 px-4 py-3">
+      <span className="text-xs text-zinc-500">{label}</span>
+      <span className="text-sm font-bold text-white">{value}</span>
+    </div>
+  );
+}
+
+function MapLegend() {
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-zinc-950/50 p-5">
+      <h3 className="font-extrabold text-white">راهنمای نقشه</h3>
+
+      <div className="mt-4 space-y-3">
+        <LegendItem color="bg-emerald-500" label="دارای ظرفیت" />
+        <LegendItem color="bg-orange-500" label="ظرفیت محدود" />
+        <LegendItem color="bg-red-500" label="تکمیل ظرفیت" />
+      </div>
+    </div>
+  );
+}
+
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-3 text-sm text-zinc-300">
+      <span className={`h-3 w-3 rounded-full ${color}`} />
+      {label}
+    </div>
+  );
+}
+
 function GuidePanel() {
   return (
-    <div className="rounded-[28px] border border-orange-200 bg-gradient-to-br from-orange-50 to-white p-5 shadow-sm dark:border-white/10 dark:bg-gradient-to-br dark:from-orange-500/15 dark:to-zinc-950 dark:shadow-none">
+    <div className="rounded-[28px] border border-white/10 bg-gradient-to-br from-orange-500/15 to-zinc-950 p-5">
       <div className="mb-4 flex items-center gap-3">
-        <div className="rounded-2xl border border-orange-300 bg-orange-100 p-3 text-orange-600 dark:border-orange-400/20 dark:bg-orange-500/10 dark:text-orange-300">
+        <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-3 text-orange-300">
           <ShieldCheck className="h-5 w-5" />
         </div>
 
-        <h3 className="text-lg font-extrabold text-zinc-950 dark:text-white">
-          نکات مهم
-        </h3>
+        <h3 className="text-lg font-extrabold text-white">نکات مهم</h3>
       </div>
 
-      <ul className="space-y-3 text-sm leading-7 text-zinc-700 dark:text-zinc-300">
+      <ul className="space-y-3 text-sm leading-7 text-zinc-300">
+        <li>اطلاعات سراها از API فعلی سامانه خوانده می‌شود.</li>
         <li>ثبت درخواست به معنی پذیرش قطعی نیست.</li>
         <li>برای پذیرش نهایی، مدارک هویتی لازم است.</li>
         <li>در حالت نقشه‌ای، هر نشانگر نشان‌دهنده یک سرا است.</li>
@@ -1134,10 +1249,10 @@ function GuidePanel() {
 
 function LoadingState() {
   return (
-    <div className="flex min-h-[420px] items-center justify-center rounded-[28px] border border-zinc-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
+    <div className="flex min-h-[420px] items-center justify-center rounded-[28px] border border-white/10 bg-white/5">
       <div className="text-center">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin text-orange-500 dark:text-orange-400" />
-        <p className="mt-4 text-sm font-bold text-zinc-700 dark:text-zinc-300">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-orange-400" />
+        <p className="mt-4 text-sm font-bold text-zinc-300">
           در حال دریافت اطلاعات سراها...
         </p>
       </div>
@@ -1145,10 +1260,19 @@ function LoadingState() {
   );
 }
 
-function ErrorState() {
+function EmptyState() {
   return (
-    <div className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-300">
-      دریافت اطلاعات سراها با خطا مواجه شد.
+    <div className="rounded-[28px] border border-dashed border-white/15 bg-zinc-950/40 p-10 text-center">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-zinc-300">
+        <Search className="h-7 w-7" />
+      </div>
+
+      <h2 className="mt-5 text-xl font-extrabold text-white">موردی یافت نشد</h2>
+
+      <p className="mx-auto mt-2 max-w-lg text-sm leading-7 text-zinc-400">
+        با فیلترهای فعلی هیچ سرایی پیدا نشد. لطفاً فیلترها را تغییر دهید یا
+        عبارت جستجو را حذف کنید.
+      </p>
     </div>
   );
 }
@@ -1173,31 +1297,31 @@ function HallDetailsModal({
       className="max-h-[90vh] max-w-[900px] overflow-hidden bg-transparent p-2"
     >
       <div className="w-full">
-        <div className="max-h-[85vh] overflow-y-auto rounded-2xl border border-zinc-200 bg-white shadow-lg dark:border-white/10 dark:bg-zinc-950">
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 text-zinc-900 dark:border-white/10 dark:bg-gray-800 dark:text-white">
+        <div className="max-h-[85vh] overflow-y-auto rounded-2xl border border-white/10 bg-white shadow-lg">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-gray-800 px-4 py-3 text-white">
             <h2 className="text-lg font-semibold">اطلاعات سرای انتخاب‌شده</h2>
             <button
               type="button"
               onClick={closeModal}
-              className="rounded-lg bg-zinc-100 px-3 py-1 text-sm text-zinc-700 transition hover:bg-zinc-200 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+              className="rounded-lg bg-white/10 px-3 py-1 text-sm hover:bg-white/20"
             >
               بستن
             </button>
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center gap-2 p-8 text-zinc-700 dark:text-zinc-300">
+            <div className="flex items-center justify-center gap-2 p-8 text-gray-700">
               <Loader2 className="h-5 w-5 animate-spin" />
               در حال دریافت جزئیات...
             </div>
           ) : !hall ? (
-            <div className="p-6 text-sm text-red-600 dark:text-red-400">
+            <div className="p-6 text-sm text-red-600">
               دریافت اطلاعات سرا با خطا مواجه شد.
             </div>
           ) : (
             <div className="p-4">
               <div className="mb-4 grid gap-4 md:grid-cols-[170px_minmax(0,1fr)]">
-                <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10">
+                <div className="overflow-hidden rounded-xl border">
                   <Image
                     src="/assets/background/2.jpg"
                     alt={hall.name}
@@ -1207,23 +1331,23 @@ function HallDetailsModal({
                   />
                 </div>
 
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-white/10 dark:bg-zinc-900/60">
-                  <h3 className="text-xl font-black text-zinc-950 dark:text-white">
+                <div className="rounded-xl border bg-gray-50 p-4">
+                  <h3 className="text-xl font-black text-gray-900">
                     {hall.name}
                   </h3>
 
                   <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-blue-700">
                       <MapPin className="h-4 w-4" />
                       {safeText(hall.district?.region?.name, "منطقه نامشخص")}
                     </span>
 
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
                       <Building2 className="h-4 w-4" />
                       {safeText(hall.district?.name, "ناحیه نامشخص")}
                     </span>
 
-                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-3 py-1 text-orange-700">
                       <Users className="h-4 w-4" />
                       مدیر: {safeText(hall.user)}
                     </span>
@@ -1232,7 +1356,7 @@ function HallDetailsModal({
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Link
                       href={`/request/new?shelterId=${hall.id}`}
-                      className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
+                      className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white hover:bg-orange-600"
                     >
                       ثبت درخواست اسکان
                     </Link>
@@ -1240,7 +1364,7 @@ function HallDetailsModal({
                     <Link
                       href={`/neighborhood-hall/profile/${hall.id}`}
                       target="_blank"
-                      className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700"
+                      className="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-bold text-white hover:bg-sky-700"
                     >
                       <ExternalLink className="h-4 w-4" />
                       مشاهده پروفایل
@@ -1249,7 +1373,7 @@ function HallDetailsModal({
                     {hall.info?.contact_number && (
                       <a
                         href={`tel:${hall.info.contact_number}`}
-                        className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
+                        className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700"
                       >
                         <Phone className="h-4 w-4" />
                         تماس
@@ -1259,7 +1383,7 @@ function HallDetailsModal({
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-xl border border-zinc-200 dark:border-white/10">
+              <div className="overflow-hidden rounded-xl border">
                 <table className="w-full border-collapse text-sm">
                   <tbody>
                     <TableRow label="نام سرا" value={hall.name} />
@@ -1277,7 +1401,10 @@ function HallDetailsModal({
                     />
                     <TableRow
                       label="موقعیت جغرافیایی"
-                      value={`${safeText(hall.lat, "-")} | ${safeText(hall.lng, "-")}`}
+                      value={`${safeText(hall.lat, "-")} | ${safeText(
+                        hall.lng,
+                        "-",
+                      )}`}
                     />
                     <TableRow
                       label="تعداد کارمندان"
@@ -1374,11 +1501,11 @@ function HallDetailsModal({
 
 function TableRow({ label, value }: { label: string; value: string }) {
   return (
-    <tr className="border-b border-zinc-200 last:border-b-0 dark:border-white/10">
-      <td className="w-1/3 bg-zinc-100 p-3 font-semibold text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+    <tr className="border-b last:border-b-0">
+      <td className="w-1/3 bg-gray-100 p-3 font-semibold text-gray-700">
         {label}
       </td>
-      <td className="p-3 text-zinc-900 dark:text-white">{value}</td>
+      <td className="p-3 text-gray-900">{value}</td>
     </tr>
   );
 }
@@ -1441,13 +1568,12 @@ function buildFacilities(item: ApiHallItem) {
   return facilities.length > 0 ? facilities : ["اطلاعات امکانات ثبت نشده"];
 }
 
-export function getStatusConfig(status: ShelterStatus) {
+function getStatusConfig(status: ShelterStatus) {
   switch (status) {
     case "active":
       return {
         label: "دارای ظرفیت",
-        badgeClass:
-          "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300",
+        badgeClass: "border-emerald-400/20 bg-emerald-500/10 text-emerald-300",
         popupBadgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
         progressClass: "bg-emerald-500",
       };
@@ -1455,8 +1581,7 @@ export function getStatusConfig(status: ShelterStatus) {
     case "limited":
       return {
         label: "ظرفیت محدود",
-        badgeClass:
-          "border-orange-300 bg-orange-50 text-orange-700 dark:border-orange-400/20 dark:bg-orange-500/10 dark:text-orange-300",
+        badgeClass: "border-orange-400/20 bg-orange-500/10 text-orange-300",
         popupBadgeClass: "border-orange-200 bg-orange-50 text-orange-700",
         progressClass: "bg-orange-500",
       };
@@ -1464,8 +1589,7 @@ export function getStatusConfig(status: ShelterStatus) {
     case "full":
       return {
         label: "تکمیل ظرفیت",
-        badgeClass:
-          "border-red-300 bg-red-50 text-red-700 dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-300",
+        badgeClass: "border-red-400/20 bg-red-500/10 text-red-300",
         popupBadgeClass: "border-red-200 bg-red-50 text-red-700",
         progressClass: "bg-red-500",
       };
@@ -1473,15 +1597,14 @@ export function getStatusConfig(status: ShelterStatus) {
     default:
       return {
         label: "نامشخص",
-        badgeClass:
-          "border-zinc-300 bg-zinc-100 text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300",
+        badgeClass: "border-white/10 bg-white/5 text-zinc-300",
         popupBadgeClass: "border-gray-200 bg-gray-50 text-gray-700",
         progressClass: "bg-zinc-500",
       };
   }
 }
 
-export function getGenderLabel(type: ShelterGenderType) {
+function getGenderLabel(type: ShelterGenderType) {
   switch (type) {
     case "men":
       return "آقایان";
@@ -1496,7 +1619,7 @@ export function getGenderLabel(type: ShelterGenderType) {
   }
 }
 
-export function getAdmissionLabel(type: ShelterAdmissionType) {
+function getAdmissionLabel(type: ShelterAdmissionType) {
   switch (type) {
     case "normal":
       return "پذیرش عادی";

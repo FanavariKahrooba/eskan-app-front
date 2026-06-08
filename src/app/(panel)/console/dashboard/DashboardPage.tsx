@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -8,12 +9,10 @@ import PermissionGuard from "@/features/power-shell-pro/components/enterprise/pe
 import { useAuditLog } from "@/features/power-shell-pro/hooks/use-audit-log";
 import { usePagePreferences } from "@/features/power-shell-pro/hooks/use-page-preferences";
 import PageShell from "@/features/power-shell/components/breadcrumb-tools/page-shell";
+
 import {
-  Activity,
   AlertTriangle,
   ArrowDownUp,
-  BrainCircuit,
-  CheckCircle2,
   Cuboid,
   Database,
   Eye,
@@ -28,7 +27,12 @@ import {
   TimerReset,
   Wrench,
 } from "lucide-react";
-import { GiTallBridge } from 'react-icons/gi'
+import { GiTallBridge } from "react-icons/gi";
+
+import { useDashboardOverview } from "./use-dashboard-overview";
+import { MonitoringSkeleton } from "@/features/monitoring/shared/components/monitoring-skeleton";
+import { MonitoringErrorState } from "@/features/monitoring/shared/components/monitoring-error-state";
+import { MonitoringFadeIn } from "@/features/monitoring/shared/components/monitoring-fade-in";
 
 const PAGE_KEY = "bridge-dashboard-main";
 const APP_BASE_PATH = "";
@@ -48,159 +52,6 @@ const currentUser = {
   ],
   featureFlags: ["executive_dashboard", "advanced_reports", "ai_assistant"],
 };
-
-type HealthStatus = "healthy" | "warning" | "critical";
-
-type BridgeAlert = {
-  id: string;
-  title: string;
-  bridge: string;
-  member: string;
-  severity: "high" | "medium" | "low";
-  source: string;
-  createdAt: string;
-};
-
-type InspectionActivity = {
-  id: string;
-  title: string;
-  inspector: string;
-  bridge: string;
-  createdAt: string;
-  status: "completed" | "in_progress" | "scheduled";
-};
-
-type TwinMember = {
-  id: string;
-  name: string;
-  category: string;
-  status: HealthStatus;
-  lastUpdate: string;
-};
-
-type AuditEntry = {
-  id: string;
-  type:
-    | "dashboard.viewed"
-    | "dashboard.filtered"
-    | "dashboard.refreshed"
-    | "dashboard.action";
-  actor: string;
-  message: string;
-  createdAt: string;
-};
-
-const alertsSeed: BridgeAlert[] = [
-  {
-    id: "ALT-101",
-    title: "افزایش ریسک در ناحیه عرشه",
-    bridge: "پل شهید همت",
-    member: "Deck Segment A3",
-    severity: "high",
-    source: "IRT + Visual Inspection",
-    createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
-  },
-  {
-    id: "ALT-102",
-    title: "ناهمخوانی داده حسگر با مدل تحلیلی",
-    bridge: "پل طبیعت",
-    member: "Pier P2",
-    severity: "medium",
-    source: "Sensor Stream",
-    createdAt: new Date(Date.now() - 1000 * 60 * 95).toISOString(),
-  },
-  {
-    id: "ALT-103",
-    title: "نیاز به بازبینی ترک ثبت‌شده",
-    bridge: "پل یادگار",
-    member: "Girder G7",
-    severity: "low",
-    source: "Visual Review",
-    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-  },
-];
-
-const inspectionsSeed: InspectionActivity[] = [
-  {
-    id: "INSP-201",
-    title: "ثبت بازرسی تصویری عرشه",
-    inspector: "مهندس رضایی",
-    bridge: "پل شهید همت",
-    createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-    status: "completed",
-  },
-  {
-    id: "INSP-202",
-    title: "دریافت داده GPR برای کابل‌ها",
-    inspector: "تیم ژئوفیزیک",
-    bridge: "پل صدر",
-    createdAt: new Date(Date.now() - 1000 * 60 * 70).toISOString(),
-    status: "in_progress",
-  },
-  {
-    id: "INSP-203",
-    title: "ماموریت حسگرگذاری پایه میانی",
-    inspector: "کارشناس پایش",
-    bridge: "پل طبیعت",
-    createdAt: new Date(Date.now() - 1000 * 60 * 210).toISOString(),
-    status: "scheduled",
-  },
-];
-
-const membersSeed: TwinMember[] = [
-  {
-    id: "BM-01",
-    name: "عرشه اصلی",
-    category: "Deck",
-    status: "warning",
-    lastUpdate: new Date(Date.now() - 1000 * 60 * 40).toISOString(),
-  },
-  {
-    id: "BM-02",
-    name: "پایه P2",
-    category: "Pier",
-    status: "critical",
-    lastUpdate: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-  },
-  {
-    id: "BM-03",
-    name: "تیر G7",
-    category: "Girder",
-    status: "healthy",
-    lastUpdate: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-  },
-  {
-    id: "BM-04",
-    name: "یاتاقان B4",
-    category: "Bearing",
-    status: "warning",
-    lastUpdate: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-  },
-];
-
-const auditSeed: AuditEntry[] = [
-  {
-    id: "DB-A1",
-    type: "dashboard.viewed",
-    actor: "مدیر سامانه",
-    message: "داشبورد اصلی مشاهده شد.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
-  },
-  {
-    id: "DB-A2",
-    type: "dashboard.filtered",
-    actor: "مدیر سامانه",
-    message: "فیلتر وضعیت داشبورد تغییر کرد.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 58).toISOString(),
-  },
-  {
-    id: "DB-A3",
-    type: "dashboard.refreshed",
-    actor: "مدیر سامانه",
-    message: "داده‌های داشبورد بروزرسانی شد.",
-    createdAt: new Date(Date.now() - 1000 * 60 * 140).toISOString(),
-  },
-];
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
@@ -222,6 +73,19 @@ function formatRelative(dateIso?: string) {
   return `${toPersianDigits(days)} روز پیش`;
 }
 
+function Badge({ label, className }: { label: string; className: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
+        className,
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 function getSeverityMeta(severity: "high" | "medium" | "low") {
   switch (severity) {
     case "high":
@@ -240,10 +104,15 @@ function getSeverityMeta(severity: "high" | "medium" | "low") {
         label: "کم",
         className: "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200",
       };
+    default:
+      return {
+        label: "نامشخص",
+        className: "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200",
+      };
   }
 }
 
-function getMemberStatusMeta(status: HealthStatus) {
+function getHealthMeta(status?: "healthy" | "warning" | "critical") {
   switch (status) {
     case "healthy":
       return {
@@ -262,13 +131,17 @@ function getMemberStatusMeta(status: HealthStatus) {
         label: "بحرانی",
         className: "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-200",
       };
+    default:
+      return {
+        label: "نامشخص",
+        className: "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200",
+      };
   }
 }
 
-function getInspectionStatusMeta(status: InspectionActivity["status"]): {
-  label: string;
-  className: string;
-} {
+function getInspectionStatusMeta(
+  status?: "completed" | "in_progress" | "scheduled",
+) {
   switch (status) {
     case "completed":
       return {
@@ -287,20 +160,12 @@ function getInspectionStatusMeta(status: InspectionActivity["status"]): {
         className:
           "bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-200",
       };
+    default:
+      return {
+        label: "نامشخص",
+        className: "bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-200",
+      };
   }
-}
-
-function Badge({ label, className }: { label: string; className: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
-        className,
-      )}
-    >
-      {label}
-    </span>
-  );
 }
 
 function StatCard({
@@ -376,7 +241,7 @@ function SectionCard({
 export default function DashboardPage() {
   const {
     preferences,
-    loading,
+    loading: preferenceLoading,
     saving,
     setActiveTab,
     setSearch,
@@ -400,11 +265,6 @@ export default function DashboardPage() {
     userId: currentUser.id,
   });
 
-  const [alerts] = React.useState(alertsSeed);
-  const [inspections] = React.useState(inspectionsSeed);
-  const [members] = React.useState(membersSeed);
-  const [auditEntries] = React.useState(auditSeed);
-
   const activeTab =
     (preferences.activeTab as "all" | "critical" | "monitoring" | "model") ||
     "all";
@@ -412,53 +272,56 @@ export default function DashboardPage() {
   const density = preferences.density || "comfortable";
   const pageSize = preferences.pageSize || 10;
 
-  const filteredAlerts = React.useMemo(() => {
-    let result = [...alerts];
+  const [filters, setFilters] = React.useState<{
+    top?: number;
+    recent?: number;
+    alerts?: number;
+    search?: string;
+    tab?: string;
+  }>({
+    top: 5,
+    recent: 8,
+    alerts: pageSize,
+    search,
+    tab: activeTab,
+  });
 
-    if (activeTab === "critical") {
-      result = result.filter((item) => item.severity === "high");
-    }
+  React.useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      search,
+      alerts: pageSize,
+      tab: activeTab,
+    }));
+  }, [search, pageSize, activeTab]);
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.bridge.toLowerCase().includes(q) ||
-          item.member.toLowerCase().includes(q) ||
-          item.source.toLowerCase().includes(q),
-      );
-    }
+  const {
+    data: response,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  }:any = useDashboardOverview(filters);
 
-    return result.slice(0, pageSize);
-  }, [alerts, activeTab, search, pageSize]);
+  if (isLoading || preferenceLoading) {
+    return (
+      <div className="p-6">
+        <MonitoringSkeleton />
+      </div>
+    );
+  }
 
-  const stats = React.useMemo(() => {
-    const criticalAlerts = alerts.filter(
-      (item) => item.severity === "high",
-    ).length;
-    const warningMembers = members.filter(
-      (item) => item.status === "warning",
-    ).length;
-    const criticalMembers = members.filter(
-      (item) => item.status === "critical",
-    ).length;
-    const completedInspections = inspections.filter(
-      (item) => item.status === "completed",
-    ).length;
+  if (isError || !response?.data) {
+    return (
+      <div className="p-6">
+        <MonitoringErrorState
+          message={error instanceof Error ? error.message : undefined}
+        />
+      </div>
+    );
+  }
 
-    return {
-      totalBridges: 12,
-      syncedModels: 9,
-      activeSensors: 148,
-      openAlerts: alerts.length,
-      criticalAlerts,
-      warningMembers,
-      criticalMembers,
-      completedInspections,
-      dataCoverage: 87,
-    };
-  }, [alerts, inspections, members]);
+  const data = response.data;
 
   return (
     <PermissionGuard
@@ -475,13 +338,13 @@ export default function DashboardPage() {
     >
       <PageShell
         title="داشبورد اصلی"
-        description="نمای یکپارچه از وضعیت پل‌ها، هشدارها، داده‌های پایش، همگام‌سازی مدل سه‌بعدی و روند فعالیت‌های بازرسی."
+        description="نمای یکپارچه و حرفه‌ای از شاخص‌ها، هشدارها، وضعیت پایش، مدل‌ها و فعالیت‌های اخیر سامانه."
         favoriteKey={PAGE_KEY}
         currentPath={`${APP_BASE_PATH}/dashboard`}
         maxWidth="full"
         stickyHeader
         enablePalette
-        loading={loading}
+        loading={isLoading || preferenceLoading}
         userPermissions={currentUser.permissions}
         breadcrumbs={[
           { label: "کنسول", href: "/" },
@@ -494,12 +357,12 @@ export default function DashboardPage() {
             label: "بروزرسانی",
             icon: <RefreshCcw size={16} />,
             variant: "secondary",
-            onClick: () => {
+            onClick: async () => {
               audit.track({
                 type: "dashboard.refreshed",
                 message: "Dashboard refresh clicked",
               });
-              window.location.reload();
+              await refetch();
             },
           },
           {
@@ -519,34 +382,18 @@ export default function DashboardPage() {
           {
             id: "dashboard-main",
             title: "داشبورد اصلی",
-            subtitle: "نمای کلی وضعیت سامانه و پل‌ها",
+            subtitle: "نمای کلی وضعیت سامانه",
             group: "داشبورد",
             href: `${APP_BASE_PATH}/dashboard`,
             keywords: ["dashboard", "main", "داشبورد"],
           },
           {
             id: "dashboard-executive",
-            title: "داشبورد مدیریتی پل",
-            subtitle: "شاخص‌های کلان مدیریتی و تصمیم‌یار",
+            title: "داشبورد مدیریتی",
+            subtitle: "شاخص‌های کلان مدیریتی",
             group: "داشبورد",
             href: `${APP_BASE_PATH}/dashboard/executive`,
             keywords: ["executive", "analytics", "مدیریتی"],
-          },
-          {
-            id: "bridge-members",
-            title: "همه اعضای پل",
-            subtitle: "فهرست عناصر و اجزای سازه‌ای پل",
-            group: "پل و عملیات",
-            href: `${APP_BASE_PATH}/bridge-members`,
-            keywords: ["bridge members", "components", "اجزای پل"],
-          },
-          {
-            id: "model-view",
-            title: "نمای سه‌بعدی پل",
-            subtitle: "مشاهده مدل سه‌بعدی و وضعیت اجزا",
-            group: "بصری‌سازی",
-            href: `${APP_BASE_PATH}/visualization/model`,
-            keywords: ["3d", "visualization", "مدل سه‌بعدی"],
           },
           {
             id: "reset-dashboard-preferences",
@@ -565,13 +412,15 @@ export default function DashboardPage() {
         headerMeta={
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
-              {toPersianDigits(stats.criticalAlerts)} هشدار بحرانی
+              {toPersianDigits(data.summary?.critical_alerts ?? 0)} هشدار بحرانی
             </span>
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
-              {toPersianDigits(stats.warningMembers)} عضو نیازمند بررسی
+              {toPersianDigits(data.summary?.warning_items ?? 0)} مورد نیازمند
+              بررسی
             </span>
             <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
-              {toPersianDigits(stats.activeSensors)} حسگر فعال
+              {toPersianDigits(data.summary?.active_monitors ?? 0)} منبع پایش
+              فعال
             </span>
             {saving ? (
               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
@@ -595,98 +444,116 @@ export default function DashboardPage() {
           </PermissionGuard>
         }
       >
-        <div className="space-y-4">
-          <PageToolbar
-            search={search}
-            onSearchChange={(value) => {
-              setSearch(value);
-              audit.track({
-                type: "dashboard.filtered",
-                message: "Dashboard search changed",
-                metadata: { search: value },
-              });
-            }}
-            density={density}
-            onDensityChange={(value) => setDensity(value)}
-            pageSize={pageSize}
-            onPageSizeChange={(value) => setPageSize(value)}
-            onResetPreferences={async () => {
-              await resetPreferences();
-              audit.track({
-                type: "dashboard.filtered",
-                message: "Dashboard preferences reset",
-              });
-            }}
-            saving={saving}
-          />
-
-          <div className="rounded-2xl border border-gray-200 bg-white px-4 shadow-sm">
-            <PageTabs
-              value={activeTab}
-              onChange={(tab) => {
-                setActiveTab(tab);
+        <div className="space-y-6">
+          <MonitoringFadeIn>
+            <PageToolbar
+              search={search}
+              onSearchChange={(value) => {
+                setSearch(value);
                 audit.track({
                   type: "dashboard.filtered",
-                  message: "Dashboard tab changed",
-                  metadata: { tab },
+                  message: "Dashboard search changed",
+                  metadata: { search: value },
                 });
               }}
-              tabs={[
-                { id: "all", label: "نمای کلی", badge: stats.totalBridges },
-                {
-                  id: "critical",
-                  label: "بحرانی",
-                  badge: stats.criticalAlerts,
-                },
-                { id: "monitoring", label: "پایش", badge: stats.activeSensors },
-                { id: "model", label: "مدل", badge: stats.syncedModels },
-              ]}
+              density={density}
+              onDensityChange={(value) => setDensity(value)}
+              pageSize={pageSize}
+              onPageSizeChange={(value) => setPageSize(value)}
+              onResetPreferences={async () => {
+                await resetPreferences();
+                audit.track({
+                  type: "dashboard.filtered",
+                  message: "Dashboard preferences reset",
+                });
+              }}
+              saving={saving}
             />
-          </div>
+          </MonitoringFadeIn>
 
-          <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
-            <StatCard
-              title="پل‌های ثبت‌شده"
-              value={toPersianDigits(stats.totalBridges)}
-              description="تعداد پل‌های فعال در سامانه"
-              icon={<GiTallBridge size={20} />}
-              tone="blue"
-            />
-            <StatCard
-              title="مدل‌های همگام"
-              value={toPersianDigits(stats.syncedModels)}
-              description="مدل‌های 3D متصل به داده"
-              icon={<Cuboid size={20} />}
-              tone="violet"
-            />
-            <StatCard
-              title="حسگرهای فعال"
-              value={toPersianDigits(stats.activeSensors)}
-              description="جریان‌های پایش متصل"
-              icon={<Radar size={20} />}
-              tone="emerald"
-            />
-            <StatCard
-              title="هشدارهای باز"
-              value={toPersianDigits(stats.openAlerts)}
-              description="هشدارهای در انتظار اقدام"
-              icon={<AlertTriangle size={20} />}
-              tone="rose"
-            />
-            <StatCard
-              title="پوشش داده"
-              value={`${toPersianDigits(stats.dataCoverage)}٪`}
-              description="سطح پوشش داده‌های مدل و میدان"
-              icon={<Database size={20} />}
-              tone="amber"
-            />
-          </section>
+          <MonitoringFadeIn delay={0.03}>
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 shadow-sm">
+              <PageTabs
+                value={activeTab}
+                onChange={(tab) => {
+                  setActiveTab(tab);
+                  audit.track({
+                    type: "dashboard.filtered",
+                    message: "Dashboard tab changed",
+                    metadata: { tab },
+                  });
+                }}
+                tabs={[
+                  {
+                    id: "all",
+                    label: "نمای کلی",
+                    badge: data.summary?.total_items ?? 0,
+                  },
+                  {
+                    id: "critical",
+                    label: "بحرانی",
+                    badge: data.summary?.critical_alerts ?? 0,
+                  },
+                  {
+                    id: "monitoring",
+                    label: "پایش",
+                    badge: data.summary?.active_monitors ?? 0,
+                  },
+                  {
+                    id: "model",
+                    label: "مدل",
+                    badge: data.summary?.synced_models ?? 0,
+                  },
+                ]}
+              />
+            </div>
+          </MonitoringFadeIn>
 
-          <section className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-            <div className="xl:col-span-2">
+          <MonitoringFadeIn delay={0.05}>
+            <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <StatCard
+                title="مجموع دارایی‌ها"
+                value={toPersianDigits(data.summary?.total_items ?? 0)}
+                description="تعداد کل آیتم‌های ثبت‌شده"
+                icon={<GiTallBridge size={20} />}
+                tone="blue"
+              />
+              <StatCard
+                title="مدل‌های همگام"
+                value={toPersianDigits(data.summary?.synced_models ?? 0)}
+                description="مدل‌های متصل به داده"
+                icon={<Cuboid size={20} />}
+                tone="violet"
+              />
+              <StatCard
+                title="منابع پایش فعال"
+                value={toPersianDigits(data.summary?.active_monitors ?? 0)}
+                description="جریان‌های فعال مانیتورینگ"
+                icon={<Radar size={20} />}
+                tone="emerald"
+              />
+              <StatCard
+                title="هشدارهای باز"
+                value={toPersianDigits(data.summary?.open_alerts ?? 0)}
+                description="هشدارهای در انتظار رسیدگی"
+                icon={<AlertTriangle size={20} />}
+                tone="rose"
+              />
+              <StatCard
+                title="پوشش داده"
+                value={`${toPersianDigits(data.summary?.data_coverage ?? 0)}٪`}
+                description="درصد پوشش داده‌های سامانه"
+                icon={<Database size={20} />}
+                tone="amber"
+              />
+            </section>
+          </MonitoringFadeIn>
+
+          <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
+            <div className="2xl:col-span-8">
               <SectionCard
                 title="هشدارهای اولویت‌دار"
-                description="خروجی یکپارچه از بازرسی، حسگر، مدل و تحلیل برای شناسایی نواحی پرریسک."
+                description="فهرست مهم‌ترین هشدارهای سامانه بر اساس داده‌های دریافتی."
                 action={
                   <button
                     type="button"
@@ -697,14 +564,14 @@ export default function DashboardPage() {
                   </button>
                 }
               >
-                {filteredAlerts.length === 0 ? (
+                {!data.alerts?.length ? (
                   <EmptyState
                     title="هشداری یافت نشد"
                     description="برای فیلترها یا عبارت جستجوی فعلی، موردی ثبت نشده است."
                   />
                 ) : (
                   <div className="space-y-3">
-                    {filteredAlerts.map((item) => {
+                    {data.alerts.map((item: any) => {
                       const meta = getSeverityMeta(item.severity);
 
                       return (
@@ -724,18 +591,10 @@ export default function DashboardPage() {
                                 />
                               </div>
                               <div className="mt-2 text-sm text-gray-600">
-                                پل:{" "}
-                                <span className="font-medium">
-                                  {item.bridge}
-                                </span>{" "}
-                                • عضو:{" "}
-                                <span className="font-medium">
-                                  {item.member}
-                                </span>
+                                {item.subtitle ?? item.source ?? "—"}
                               </div>
                               <div className="mt-1 text-xs text-gray-500">
-                                منبع داده: {item.source} •{" "}
-                                {formatRelative(item.createdAt)}
+                                {formatRelative(item.created_at)}
                               </div>
                             </div>
 
@@ -764,191 +623,209 @@ export default function DashboardPage() {
               </SectionCard>
             </div>
 
-            <SectionCard
-              title="شاخص سلامت سیستم"
-              description="جمع‌بندی وضعیت پایش، تحلیل و همگام‌سازی."
-            >
-              <div className="space-y-3">
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
-                    <Gauge size={16} />
-                    وضعیت پایش
+            <div className="2xl:col-span-4">
+              <SectionCard
+                title="سلامت سیستم"
+                description="جمع‌بندی لحظه‌ای از کیفیت، پایش و همگام‌سازی داده."
+              >
+                <div className="space-y-3">
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
+                      <Gauge size={16} />
+                      وضعیت پایش
+                    </div>
+                    <p className="mt-2 text-sm leading-7 text-emerald-700">
+                      <strong>
+                        {toPersianDigits(data.health?.monitoring_score ?? 0)}٪
+                      </strong>{" "}
+                      پایداری در جریان داده‌های مانیتورینگ ثبت شده است.
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm leading-7 text-emerald-700">
-                    جریان حسگرها پایدار است و{" "}
-                    <strong>{toPersianDigits(92)}٪</strong> داده‌ها بدون خطا
-                    دریافت شده‌اند.
-                  </p>
-                </div>
 
-                <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-violet-800">
-                    <Layers3 size={16} />
-                    همگام‌سازی مدل
+                  <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-violet-800">
+                      <Layers3 size={16} />
+                      همگام‌سازی مدل
+                    </div>
+                    <p className="mt-2 text-sm leading-7 text-violet-700">
+                      <strong>
+                        {toPersianDigits(data.summary?.synced_models ?? 0)}
+                      </strong>{" "}
+                      منبع یا مدل با داده‌های جاری همگام هستند.
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm leading-7 text-violet-700">
-                    <strong>{toPersianDigits(stats.syncedModels)}</strong> مدل
-                    سه‌بعدی با لایه اطلاعاتی و داده میدانی همگام هستند.
-                  </p>
-                </div>
 
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
-                    <BrainCircuit size={16} />
-                    آمادگی تصمیم‌یار
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+                      <ShieldAlert size={16} />
+                      کیفیت داده
+                    </div>
+                    <p className="mt-2 text-sm leading-7 text-amber-700">
+                      <strong>
+                        {toPersianDigits(data.health?.data_quality_score ?? 0)}٪
+                      </strong>{" "}
+                      کیفیت داده برای تحلیل و تصمیم‌یار قابل اتکا ارزیابی شده
+                      است.
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm leading-7 text-amber-700">
-                    تحلیل‌های تصمیم‌یار برای{" "}
-                    <strong>{toPersianDigits(6)}</strong> ناحیه نیازمند نگهداری
-                    آماده شده است.
-                  </p>
                 </div>
-              </div>
-            </SectionCard>
-          </section>
+              </SectionCard>
+            </div>
+          </div>
 
-          <section className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <SectionCard
-              title="فعالیت‌های اخیر بازرسی"
-              description="آخرین رویدادهای ثبت‌شده از تیم‌های بازرسی و پایش."
-            >
-              <div className="space-y-3">
-                {inspections.map((item) => {
-                  const meta = getInspectionStatusMeta(item.status);
+          <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
+            <div className="2xl:col-span-6">
+              <SectionCard
+                title="فعالیت‌های اخیر"
+                description="آخرین رویدادها و درخواست‌های ثبت‌شده."
+              >
+                <div className="space-y-3">
+                  {(data.recent_activities ?? []).map((item: any) => {
+                    const meta = getInspectionStatusMeta(item.status);
 
-                  return (
-                    <div
-                      key={item.id}
-                      className="rounded-2xl border border-gray-200 p-4"
-                    >
-                      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <div className="font-medium text-gray-950">
-                              {item.title}
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-2xl border border-gray-200 p-4"
+                      >
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="font-medium text-gray-950">
+                                {item.title}
+                              </div>
+                              <Badge
+                                label={meta.label}
+                                className={meta.className}
+                              />
                             </div>
-                            <Badge
-                              label={meta.label}
-                              className={meta.className}
-                            />
+                            <div className="mt-2 text-sm text-gray-600">
+                              {item.actor ?? "—"} • {item.context ?? "—"}
+                            </div>
+                            <div className="mt-1 text-xs text-gray-500">
+                              {formatRelative(item.created_at)}
+                            </div>
                           </div>
-                          <div className="mt-2 text-sm text-gray-600">
-                            {item.inspector} • {item.bridge}
-                          </div>
-                          <div className="mt-1 text-xs text-gray-500">
-                            {formatRelative(item.createdAt)}
-                          </div>
-                        </div>
 
-                        <div className="rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
-                          {item.id}
+                          <div className="rounded-xl bg-gray-50 px-3 py-2 text-xs text-gray-600">
+                            {item.code ?? item.id}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
+                    );
+                  })}
+                </div>
+              </SectionCard>
+            </div>
 
-            <SectionCard
-              title="اعضای حساس پل"
-              description="عناصر دارای ریسک یا نیازمند بازبینی."
-            >
-              <div className="space-y-3">
-                {members.map((item) => {
-                  const meta = getMemberStatusMeta(item.status);
+            <div className="2xl:col-span-6">
+              <SectionCard
+                title="اقلام حساس"
+                description="مواردی که نیازمند بازبینی یا توجه بیشتر هستند."
+              >
+                <div className="space-y-3">
+                  {(data.risky_items ?? []).map((item: any) => {
+                    const meta = getHealthMeta(item.status);
 
-                  return (
+                    return (
+                      <div
+                        key={item.id}
+                        className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-medium text-gray-950">
+                              {item.name}
+                            </div>
+                            <div className="mt-1 text-xs text-gray-500">
+                              {item.category ?? "—"} • {item.code ?? item.id}
+                            </div>
+                            <div className="mt-2 text-xs text-gray-500">
+                              بروزرسانی: {formatRelative(item.updated_at)}
+                            </div>
+                          </div>
+                          <Badge
+                            label={meta.label}
+                            className={meta.className}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </SectionCard>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
+            <div className="2xl:col-span-8">
+              <SectionCard
+                title="جعبه تصمیم‌یار"
+                description="پیشنهادهای هوشمند تولیدشده بر اساس وضعیت جاری سامانه."
+              >
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  {(data.recommendations ?? []).map(
+                    (item: any, index: number) => {
+                      const tones = [
+                        "border-blue-200 bg-blue-50 text-blue-700",
+                        "border-amber-200 bg-amber-50 text-amber-700",
+                        "border-emerald-200 bg-emerald-50 text-emerald-700",
+                      ];
+                      const icons = [
+                        <Sparkles key="s" size={16} />,
+                        <ShieldAlert key="a" size={16} />,
+                        <TimerReset key="t" size={16} />,
+                      ];
+                      const style = tones[index % tones.length];
+                      const icon = icons[index % icons.length];
+
+                      return (
+                        <div
+                          key={item.id ?? index}
+                          className={cn("rounded-2xl border p-5", style)}
+                        >
+                          <div className="flex items-center gap-2 text-sm font-semibold">
+                            {icon}
+                            {item.title ??
+                              `پیشنهاد ${toPersianDigits(index + 1)}`}
+                          </div>
+                          <p className="mt-3 text-sm leading-7">
+                            {item.description}
+                          </p>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </SectionCard>
+            </div>
+
+            <div className="2xl:col-span-4">
+              <SectionCard
+                title="Audit Log"
+                description="رویدادهای اخیر این صفحه."
+              >
+                <div className="space-y-3">
+                  {(data.audit_logs ?? []).map((entry: any) => (
                     <div
-                      key={item.id}
-                      className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
+                      key={entry.id}
+                      className="rounded-2xl border border-gray-100 bg-gray-50 p-4"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-medium text-gray-950">
-                            {item.name}
-                          </div>
-                          <div className="mt-1 text-xs text-gray-500">
-                            {item.category} • {item.id}
-                          </div>
-                          <div className="mt-2 text-xs text-gray-500">
-                            بروزرسانی: {formatRelative(item.lastUpdate)}
-                          </div>
-                        </div>
-                        <Badge label={meta.label} className={meta.className} />
+                      <div className="text-sm font-medium text-gray-900">
+                        {entry.message}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500">
+                        {entry.actor} • {formatRelative(entry.created_at)}
+                      </div>
+                      <div className="mt-2 inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-inset ring-gray-200">
+                        {entry.type}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </SectionCard>
-          </section>
-
-          <section className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <SectionCard
-              title="جعبه تصمیم‌یار"
-              description="خلاصه پیشنهادهای هوشمند بر اساس ترکیب داده‌های بازرسی، حسگر و مدل."
-            >
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-blue-800">
-                    <Sparkles size={16} />
-                    پیشنهاد ۱
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-blue-700">
-                    برای عرشه پل شهید همت، بازبینی ترکیبی Visual + IRT در بازه
-                    ۷۲ ساعت آینده پیشنهاد می‌شود.
-                  </p>
+                  ))}
                 </div>
-
-                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
-                    <ShieldAlert size={16} />
-                    پیشنهاد ۲
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-amber-700">
-                    داده‌های پایه P2 نیازمند صحت‌سنجی با مدل اجزای محدود و
-                    مقایسه با الگوی تاریخی است.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
-                    <TimerReset size={16} />
-                    پیشنهاد ۳
-                  </div>
-                  <p className="mt-3 text-sm leading-7 text-emerald-700">
-                    زمان‌بندی نگهداری پیشگیرانه برای یاتاقان B4 در برنامه آتی
-                    ثبت شود.
-                  </p>
-                </div>
-              </div>
-            </SectionCard>
-
-            <SectionCard
-              title="Audit Log"
-              description="رویدادهای اخیر این صفحه."
-            >
-              <div className="space-y-3">
-                {auditEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="rounded-2xl border border-gray-100 bg-gray-50 p-4"
-                  >
-                    <div className="text-sm font-medium text-gray-900">
-                      {entry.message}
-                    </div>
-                    <div className="mt-1 text-xs text-gray-500">
-                      {entry.actor} • {formatRelative(entry.createdAt)}
-                    </div>
-                    <div className="mt-2 inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-inset ring-gray-200">
-                      {entry.type}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          </section>
+              </SectionCard>
+            </div>
+          </div>
         </div>
       </PageShell>
     </PermissionGuard>

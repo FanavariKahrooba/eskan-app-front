@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import NewShelterRequestPage from "./NewShelterRequestPage";
 
 export const metadata: Metadata = {
-  title: "ثبت درخواست اسکان موقت | سامانه اسکان سراهای محله",
+  title: "ثبت درخواست اسکان موقت |  سامانه ثبت درخواست اسکان سرای های محله",
   description:
     "ثبت درخواست اسکان موقت، انتخاب سرای محله، ثبت اطلاعات متقاضی، همراهان، شرایط خاص و دریافت کد رهگیری.",
   keywords: [
@@ -15,7 +15,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "ثبت درخواست اسکان موقت",
-    description: "فرم ثبت درخواست اسکان موقت در سامانه اسکان سراهای محله.",
+    description:
+      "فرم ثبت درخواست اسکان موقت در  سامانه ثبت درخواست اسکان سرای های محله.",
     type: "website",
     locale: "fa_IR",
   },

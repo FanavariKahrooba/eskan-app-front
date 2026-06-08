@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -5,6 +6,8 @@ import type { ReactNode } from "react";
 import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Bed,
@@ -18,21 +21,18 @@ import {
   LocateFixed,
   Map,
   MapPin,
-  Navigation,
   Phone,
   Search,
   ShieldCheck,
   Users,
   X,
-  XCircle,
 } from "lucide-react";
-import { getDistrictList, getRegionList } from "@/actions/district/district";
-import { useModal } from "@/hooks/useModal";
-import { Modal } from "@/components/ui/modal";
-import EmptyState from "./EmptyState";
 
-import dynamic from "next/dynamic";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { Modal } from "@/components/ui/modal";
+import { useModal } from "@/hooks/useModal";
 import SheltersExplorerLoading from "./SheltersExplorerLoading";
+import EmptyState from "./EmptyState";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -87,7 +87,6 @@ type ApiHallItem = {
     number_of_rooms?: number | string;
     number_of_computer_workshops?: number | string;
     year_of_manufacture?: number | string;
-
     total_capacity?: number | string;
     free_capacity?: number | string;
     reserved_capacity?: number | string;
@@ -138,18 +137,44 @@ export default function SheltersExplorer() {
   const [regions, setRegions] = useState<RegionItem[]>([]);
   const [districts, setDistricts] = useState<DistrictItem[]>([]);
 
-  const [shelters, setShelters] = useState<Shelter[]>([]);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
+  const [selectedHallDetails, setSelectedHallDetails] =
+    useState<DetailResponse | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true);
   const [isRegionsLoading, setIsRegionsLoading] = useState(false);
   const [isDistrictsLoading, setIsDistrictsLoading] = useState(false);
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
-  const [selectedHallDetails, setSelectedHallDetails] =
-    useState<DetailResponse | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 12;
 
+  const debouncedSearch = useDebouncedValue(search, 350);
   const { isOpen, openModal, closeModal } = useModal();
+
+  const {
+    data: shelters = [],
+    isLoading,
+    isFetching,
+    isError,
+  } = useQuery<Shelter[]>({
+    queryKey: ["shelter-explorer", region, district, debouncedSearch],
+    queryFn: async () => {
+      const { data } = await axios.get(
+        "/api/neighborhood-halls/shelter-explorer",
+        {
+          params: {
+            region,
+            district,
+            q: debouncedSearch,
+          },
+        },
+      );
+
+      const list: ApiHallItem[] = Array.isArray(data?.data) ? data.data : [];
+      return list.map(adaptHall).filter(Boolean) as Shelter[];
+    },
+    placeholderData: (previousData) => previousData,
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -157,10 +182,8 @@ export default function SheltersExplorer() {
     async function loadRegions() {
       try {
         setIsRegionsLoading(true);
-        const data = await getRegionList();
-
+        const { data } = await axios.get("/api/regions");
         if (!mounted) return;
-
         setRegions(Array.isArray(data?.data) ? data.data : []);
       } catch (error) {
         console.error("Error loading regions:", error);
@@ -189,10 +212,11 @@ export default function SheltersExplorer() {
 
       try {
         setIsDistrictsLoading(true);
-        const data = await getDistrictList(region);
+        const { data } = await axios.get(`/api/districts?regionId=${region}`, {
+          params: { region_id: region },
+        });
 
         if (!mounted) return;
-
         setDistricts(Array.isArray(data?.data) ? data.data : []);
       } catch (error) {
         console.error("Error loading districts:", error);
@@ -210,56 +234,20 @@ export default function SheltersExplorer() {
   }, [region]);
 
   useEffect(() => {
-    let mounted = true;
-
-    async function fetchShelters() {
-      try {
-        setIsLoading(true);
-
-        const { data } = await axios.get("/api/neighborhood-halls/shelter-explorer", {
-          params: {
-            region,
-            district,
-            q: search,
-          },
-        });
-
-        if (!mounted) return;
-
-        const list: ApiHallItem[] = Array.isArray(data?.data) ? data.data : [];
-        const adapted = list.map(adaptHall).filter(Boolean) as Shelter[];
-
-        setShelters(adapted);
-
-        if (!selectedShelter && adapted.length > 0) {
-          setSelectedShelter(adapted[0]);
-        }
-
-        if (
-          selectedShelter &&
-          !adapted.some((item) => item.id === selectedShelter.id)
-        ) {
-          setSelectedShelter(adapted[0] ?? null);
-        }
-      } catch (error) {
-        console.error("Error fetching shelters:", error);
-        if (mounted) setShelters([]);
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    }
-
-    const timer = setTimeout(fetchShelters, 350);
-
-    return () => {
-      mounted = false;
-      clearTimeout(timer);
-    };
-  }, [search, region, district]);
+    setCurrentPage(1);
+  }, [
+    search,
+    debouncedSearch,
+    region,
+    district,
+    status,
+    genderType,
+    admissionType,
+  ]);
 
   const filteredShelters = useMemo(() => {
     return shelters.filter((shelter) => {
-      const text = search.trim();
+      const text = debouncedSearch.trim();
 
       const matchesSearch =
         !text ||
@@ -283,7 +271,7 @@ export default function SheltersExplorer() {
         matchesSearch && matchesStatus && matchesGender && matchesAdmission
       );
     });
-  }, [shelters, search, status, genderType, admissionType]);
+  }, [shelters, debouncedSearch, status, genderType, admissionType]);
 
   const totalFree = filteredShelters.reduce(
     (sum, shelter) => sum + shelter.freeCapacity,
@@ -295,6 +283,33 @@ export default function SheltersExplorer() {
     0,
   );
 
+  const totalPages = Math.max(1, Math.ceil(filteredShelters.length / pageSize));
+
+  const paginatedShelters = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredShelters.slice(start, start + pageSize);
+  }, [filteredShelters, currentPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
+    if (!selectedShelter && filteredShelters.length > 0) {
+      setSelectedShelter(filteredShelters[0]);
+      return;
+    }
+
+    if (
+      selectedShelter &&
+      !filteredShelters.some((item) => item.id === selectedShelter.id)
+    ) {
+      setSelectedShelter(filteredShelters[0] ?? null);
+    }
+  }, [filteredShelters, selectedShelter]);
+
   const resetFilters = () => {
     setSearch("");
     setRegion("");
@@ -302,6 +317,7 @@ export default function SheltersExplorer() {
     setStatus("all");
     setGenderType("all");
     setAdmissionType("all");
+    setCurrentPage(1);
   };
 
   const fetchHallDetails = async (id: number) => {
@@ -309,7 +325,9 @@ export default function SheltersExplorer() {
       setIsDetailsLoading(true);
       setSelectedHallDetails(null);
 
-      const { data } = await axios.get(`/api/neighborhood-halls/shelter-explorer/${id}`);
+      const { data } = await axios.get(
+        `/api/neighborhood-halls/shelter-explorer/${id}`,
+      );
 
       setSelectedHallDetails(data);
       openModal();
@@ -327,18 +345,18 @@ export default function SheltersExplorer() {
       dir="rtl"
       className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white"
     >
-      <Header />
+      {/* <Header /> */}
 
       <section className="border-b border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.02]">
         <div className="mx-auto max-w-400 px-6 py-10 lg:px-8">
           <div className="flex flex-col gap-4">
-            <Link
+            {/* <Link
               href="/"
               className="inline-flex w-fit items-center gap-2 text-sm text-zinc-600 transition hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
               بازگشت به صفحه اصلی
-            </Link>
+            </Link> */}
 
             <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-4 py-1.5 text-sm text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300">
               <MapPin className="h-4 w-4" />
@@ -347,9 +365,9 @@ export default function SheltersExplorer() {
 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h1 className="text-3xl font-black text-zinc-950 md:text-5xl dark:text-white">
+                {/* <h1 className="text-3xl font-black text-zinc-950 md:text-5xl dark:text-white">
                   مشاهده سراهای فعال
-                </h1>
+                </h1> */}
 
                 <p className="mt-4 max-w-3xl text-sm leading-8 text-zinc-600 md:text-base dark:text-zinc-400">
                   از این بخش می‌توانید سراهای فعال را مشاهده کنید،
@@ -401,10 +419,17 @@ export default function SheltersExplorer() {
           <section className="min-w-0">
             {isLoading ? (
               <LoadingState />
+            ) : isError ? (
+              <ErrorState />
             ) : viewMode === "list" ? (
               <ListView
-                shelters={filteredShelters}
+                shelters={paginatedShelters}
+                totalCount={filteredShelters.length}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
                 onDetails={fetchHallDetails}
+                isFetching={isFetching}
               />
             ) : (
               <MapView
@@ -439,7 +464,7 @@ function Header() {
 
           <div>
             <div className="text-base font-black text-zinc-950 dark:text-white">
-              سامانه اسکان سراهای محله
+              سامانه ثبت درخواست اسکان سرای های محله
             </div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400">
               مشاهده ظرفیت و موقعیت سراها
@@ -656,7 +681,7 @@ function FiltersPanel({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="نام سرا، مدیر، محله..."
-              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-4 pr-11 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-400/60 focus:bg-white dark:border-white/10 dark:bg-zinc-950/70 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-orange-400/40"
+              className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 py-3 pl-4 pr-11 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-orange-400/60  dark:border-white/10 dark:bg-zinc-950/70 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-orange-400/40"
             />
           </div>
         </label>
@@ -762,7 +787,7 @@ function SelectField({
         value={value}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-orange-400/60 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-zinc-950/70 dark:text-white dark:focus:border-orange-400/40"
+        className="w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-orange-400/60  disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-zinc-950/70 dark:text-white dark:focus:border-orange-400/40"
       >
         {options.map((option) => (
           <option
@@ -780,12 +805,22 @@ function SelectField({
 
 function ListView({
   shelters,
+  totalCount,
+  currentPage,
+  totalPages,
+  onPageChange,
   onDetails,
+  isFetching,
 }: {
   shelters: Shelter[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   onDetails: (id: number) => void;
+  isFetching?: boolean;
 }) {
-  if (shelters.length === 0) {
+  if (totalCount === 0) {
     return <EmptyState />;
   }
 
@@ -797,19 +832,33 @@ function ListView({
             نتایج جستجو
           </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {shelters.length.toLocaleString("fa-IR")} سرا مطابق فیلترهای انتخابی
-            یافت شد.
+            {totalCount.toLocaleString("fa-IR")} سرا مطابق فیلترهای انتخابی یافت
+            شد.
           </p>
         </div>
 
         <div className="inline-flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <Layers className="h-4 w-4" />
+          {isFetching ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Layers className="h-4 w-4" />
+          )}
+          <span>
+            صفحه {currentPage.toLocaleString("fa-IR")} از{" "}
+            {totalPages.toLocaleString("fa-IR")}
+          </span>
         </div>
       </div>
 
       {shelters.map((shelter) => (
         <ShelterCard key={shelter.id} shelter={shelter} onDetails={onDetails} />
       ))}
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </div>
   );
 }
@@ -860,11 +909,6 @@ function ShelterCard({
                 <MapPin className="h-4 w-4 text-orange-500 dark:text-orange-300" />
                 {shelter.region}، {shelter.district}
               </span>
-
-              {/* <span className="inline-flex items-center gap-2">
-                <Users className="h-4 w-4 text-sky-500 dark:text-sky-300" />
-                مدیر: {shelter.manager}
-              </span> */}
 
               <span className="inline-flex items-center gap-2">
                 <Phone className="h-4 w-4 text-emerald-500 dark:text-emerald-300" />
@@ -949,6 +993,98 @@ function ShelterCard({
   );
 }
 
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages = buildPagination(currentPage, totalPages);
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+      <button
+        type="button"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
+      >
+        قبلی
+      </button>
+
+      {pages.map((item, index) =>
+        item === "..." ? (
+          <span
+            key={`ellipsis-${index}`}
+            className="px-2 text-sm text-zinc-500 dark:text-zinc-400"
+          >
+            ...
+          </span>
+        ) : (
+          <button
+            key={item}
+            type="button"
+            onClick={() => onPageChange(item)}
+            className={`min-w-10 rounded-xl border px-3 py-2 text-sm font-bold transition ${
+              item === currentPage
+                ? "border-orange-500 bg-orange-500 text-white"
+                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
+            }`}
+          >
+            {item.toLocaleString("fa-IR")}
+          </button>
+        ),
+      )}
+
+      <button
+        type="button"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:bg-white/10"
+      >
+        بعدی
+      </button>
+    </div>
+  );
+}
+
+function buildPagination(currentPage: number, totalPages: number) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 4) {
+    return [1, 2, 3, 4, 5, "...", totalPages] as const;
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [
+      1,
+      "...",
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ] as const;
+  }
+
+  return [
+    1,
+    "...",
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    "...",
+    totalPages,
+  ] as const;
+}
+
 export function MiniStat({
   label,
   value,
@@ -1005,6 +1141,14 @@ function LoadingState() {
           در حال دریافت اطلاعات سراها...
         </p>
       </div>
+    </div>
+  );
+}
+
+function ErrorState() {
+  return (
+    <div className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-300">
+      دریافت اطلاعات سراها با خطا مواجه شد.
     </div>
   );
 }
@@ -1133,10 +1277,7 @@ function HallDetailsModal({
                     />
                     <TableRow
                       label="موقعیت جغرافیایی"
-                      value={`${safeText(hall.lat, "-")} | ${safeText(
-                        hall.lng,
-                        "-",
-                      )}`}
+                      value={`${safeText(hall.lat, "-")} | ${safeText(hall.lng, "-")}`}
                     />
                     <TableRow
                       label="تعداد کارمندان"

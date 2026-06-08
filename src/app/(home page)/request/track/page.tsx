@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import TrackRequestPage from "./TrackRequestPage";
 
 export const metadata: Metadata = {
-  title: "پیگیری درخواست اسکان | سامانه اسکان سراهای محله",
+  title: "پیگیری درخواست اسکان |  سامانه ثبت درخواست اسکان سرای های محله",
   description:
     "پیگیری وضعیت درخواست اسکان با استفاده از کد رهگیری، مشاهده نتیجه بررسی و اطلاعات مراجعه.",
   keywords: [

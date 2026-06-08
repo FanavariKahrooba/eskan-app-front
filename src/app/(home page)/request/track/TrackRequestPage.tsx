@@ -288,7 +288,7 @@ function Header() {
 
           <div>
             <div className="text-base font-black text-slate-950 dark:text-white">
-              سامانه اسکان سراهای محله
+              سامانه ثبت درخواست اسکان سرای های محله
             </div>
             <div className="text-xs text-slate-500 dark:text-zinc-400">
               پیگیری درخواست

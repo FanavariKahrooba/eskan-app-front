@@ -273,7 +273,7 @@ function Header() {
           </div>
           <div>
             <div className="text-base font-black text-white">
-              سامانه اسکان سراهای محله
+              سامانه ثبت درخواست اسکان سرای های محله
             </div>
             <div className="text-xs text-zinc-400">
               مدیریت ظرفیت، درخواست و پذیرش
