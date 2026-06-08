@@ -19,6 +19,8 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import SheltersExplorerSection from "./SheltersExplorerSection";
+import HeroCapacitySection from "./HeroCapacitySection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -118,8 +120,8 @@ export default function PublicHomePage() {
       className="min-h-screen bg-slate-100 text-slate-900 dark:bg-zinc-950 dark:text-zinc-100"
     >
       <Header />
-
-      <section className="relative overflow-hidden border-b border-slate-300 bg-gradient-to-br from-slate-100 via-stone-100 to-orange-50 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
+      <HeroCapacitySection />
+      {/* <section className="relative overflow-hidden border-b border-slate-300 bg-gradient-to-br from-slate-100 via-stone-100 to-orange-50 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,146,60,0.16),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(59,130,246,0.10),transparent_32%)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-24">
@@ -231,8 +233,8 @@ export default function PublicHomePage() {
             </motion.div>
           </div>
         </div>
-      </section>
-
+      </section> */}
+      <SheltersExplorerSection />
       <MainActionsSection />
       <HowItWorksSection />
       <CapacityOverviewSection />
