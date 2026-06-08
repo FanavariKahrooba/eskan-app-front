@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL;
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const SHELTER_REQUESTS_PATH = "/api/v1/front/shelter-requests";
 
 export async function POST(req: NextRequest) {

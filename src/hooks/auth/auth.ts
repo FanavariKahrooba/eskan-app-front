@@ -218,31 +218,31 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthOptions 
     router.push('/v1/admin/dashboard')
   }
 
-  const logout = async () => {
-    const token = getCookie('access-token') as string | undefined
+  // const logout = useCallback(async () => {
+  //   const token = getCookie('access-token') as string | undefined
 
-    if (token) {
-      await axios.post('/api/logout').catch(() => null)
-    }
+  //   if (token) {
+  //     await axios.post('/api/logout').catch(() => null)
+  //   }
 
-    deleteCookie('access-token')
-    deleteCookie('ct_ot')
-    deleteCookie('ExpTime')
+  //   deleteCookie('access-token')
+  //   deleteCookie('ct_ot')
+  //   deleteCookie('ExpTime')
 
-    await mutate(null, false)
+  //   await mutate(null, false)
 
-    router.push('/login-otp')
-  }
+  //   router.push('/login-otp')
+  // })
 
   useEffect(() => {
     if (middleware === 'guest' && redirectIfAuthenticated && user) {
       router.push(redirectIfAuthenticated)
     }
 
-    if (middleware === 'auth' && error && !user) {
-      logout()
-    }
-  }, [middleware, redirectIfAuthenticated, user, error])
+    // if (middleware === 'auth' && error && !user) {
+    //   logout()
+    // }
+  }, [middleware, redirectIfAuthenticated, user, error, router])
 
   return {
     isAuthenticated: !!user,
@@ -250,7 +250,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated }: UseAuthOptions 
     loginOtp,
     registerOtp,
     VerifyOtp,
-    logout,
+    // logout,
     loading: !!accessToken && !user && !error,
   }
 }
