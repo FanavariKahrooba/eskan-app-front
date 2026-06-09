@@ -127,7 +127,7 @@ export function AiAssistantShell({ tenantId, userId, model }: Props) {
             <div className="mx-auto max-w-5xl">
               <ChatInput disabled={isSending} onSend={send} />
               <p className="mt-3 text-center text-[11px] text-slate-500">
-                فناوری کهربا
+                سامانه ثبت اسکان
               </p>
             </div>
           </footer>

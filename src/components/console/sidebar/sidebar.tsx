@@ -197,9 +197,9 @@ export default function Sidebar() {
             {showExpanded ? (
               <HeaderBrand
                 brandIcon="/assets/img/logo.png"
-                brandIconAlt="فناوری کهربا"
+                brandIconAlt="سامانه ثبت اسکان"
                 brandIconSizeHeight={54}
-                title1="فناوری کهربا"
+                title1="سامانه ثبت اسکان"
                 title2="پنل مدیریت"
                 isH1
               />
@@ -208,7 +208,7 @@ export default function Sidebar() {
                 src="/assets/img/logo.png"
                 width={35}
                 height={48}
-                alt="فناوری کهربا"
+                alt="سامانه ثبت اسکان"
               />
             )}
           </div>
@@ -291,11 +291,11 @@ export default function Sidebar() {
               src="/assets/img/logo.png"
               width={20}
               height={38}
-              alt="فناوری کهربا"
+              alt="سامانه ثبت اسکان"
             />
             {showExpanded && (
               <span className="text-xs text-blue-600">
-                تیم توسعه فناوری کهربا
+                تیم توسعه سامانه ثبت اسکان
               </span>
             )}
           </div>

@@ -24,6 +24,7 @@ import {
   Sparkles,
   SunMedium,
   X,
+  type LucideIcon,
 } from "lucide-react";
 
 type ThemeMode = "system" | "light" | "dark";
@@ -33,13 +34,13 @@ type GuideItem = {
   title: string;
   short?: string;
   answer: string;
-  icon?: React.ElementType;
+  icon?: LucideIcon;
   category: "شروع" | "درخواست" | "پیگیری" | "سراها" | "پشتیبانی";
   keywords?: string[];
   links?: {
     title: string;
     href: string;
-    icon?: React.ElementType;
+    icon?: LucideIcon;
     variant?: "primary" | "secondary" | "success";
   }[];
 };
@@ -513,12 +514,11 @@ function ThemeSwitcher({
   setMode: (mode: ThemeMode) => void;
   compact?: boolean;
 }) {
-  const items: { value: ThemeMode; label: string; icon: React.ElementType }[] =
-    [
-      { value: "system", label: "سیستم", icon: Sparkles },
-      { value: "light", label: "روشن", icon: SunMedium },
-      { value: "dark", label: "تیره", icon: MoonStar },
-    ];
+  const items: { value: ThemeMode; label: string; icon: LucideIcon }[] = [
+    { value: "system", label: "سیستم", icon: Sparkles },
+    { value: "light", label: "روشن", icon: SunMedium },
+    { value: "dark", label: "تیره", icon: MoonStar },
+  ];
 
   return (
     <div className="flex items-center gap-1 rounded-2xl border border-slate-200 bg-white/90 p-1 dark:border-white/10 dark:bg-white/5">
@@ -771,7 +771,7 @@ function QuickAction({
   label,
 }: {
   href: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   label: string;
 }) {
   return (

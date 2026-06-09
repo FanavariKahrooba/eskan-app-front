@@ -6,6 +6,6 @@ export const ImageInfo = {
 }
 
 export const webSiteInfo = {
-    "websiteName": "فناوری کهربا",
+    "websiteName": "سامانه ثبت اسکان",
     "websiteNameEn": "Fanavari Kahroba"
 }
