@@ -41,7 +41,7 @@ export default function HeroSlider() {
     <section
       dir="rtl"
       aria-roledescription="carousel"
-      className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-zinc-950"
+      className="relative h-[800px] min-h-[500px] w-full overflow-hidden bg-zinc-950"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -74,7 +74,7 @@ export default function HeroSlider() {
               fill
               priority={index === 0}
               sizes="100vw"
-              className="object-cover"
+              className="object-contain"
             />
           </motion.div>
         </motion.div>

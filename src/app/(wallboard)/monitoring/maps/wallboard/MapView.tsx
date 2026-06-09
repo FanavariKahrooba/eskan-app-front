@@ -121,7 +121,7 @@ export default function MapView({
     : defaultCenter;
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+    <div className="w-full">
       <div className="overflow-hidden rounded-[32px] border border-zinc-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-white/5 dark:shadow-none">
         <div className="mb-3 flex flex-col gap-3 px-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -131,13 +131,6 @@ export default function MapView({
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
               روی هر نشانگر کلیک کنید.
             </p>
-            <Link
-              className=" bg-orange-600 rounded-md mt-2 text-xs px-4 hover:bg-orange-800"
-              target="_blank"
-              href="/monitoring/maps/wallboard"
-            >
-              نمایش تمام صفحه
-            </Link>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300">
@@ -146,7 +139,7 @@ export default function MapView({
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-[24px]">
+        <div className="relative overflow-hidden rounded-[24px] w-full h-full">
           <MapSkin />
 
           <div className="absolute left-4 top-4 z-[500] flex flex-col gap-2">
@@ -235,7 +228,7 @@ export default function MapView({
         </div>
       </div>
 
-      <div className="space-y-5">
+      {/* <div className="space-y-5">
         {selectedShelter ? (
           <SelectedShelterPanel
             shelter={selectedShelter}
@@ -248,7 +241,7 @@ export default function MapView({
         )}
 
         <MapLegend />
-      </div>
+      </div> */}
     </div>
   );
 }

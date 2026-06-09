@@ -548,6 +548,13 @@ export default function DashboardLayout() {
       icon: Building2,
       color: "from-sky-200 to-cyan-700",
     },
+    {
+      title: "نقشه سراها Wallboard",
+      description: "بررسی وضعیت فعالیت،  بر روی نقشه",
+      href: "/monitoring/maps/wallboard",
+      icon: Building2,
+      color: "from-sky-200 to-cyan-700",
+    },
   ];
 
   const today = new DateObject({ calendar: persian, locale: persian_fa });

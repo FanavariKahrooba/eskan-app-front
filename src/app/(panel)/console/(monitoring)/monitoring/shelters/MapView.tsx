@@ -131,6 +131,13 @@ export default function MapView({
             <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
               روی هر نشانگر کلیک کنید.
             </p>
+            <Link
+              className=" bg-orange-600 rounded-md mt-2 text-xs px-4 hover:bg-orange-800"
+              target="_blank"
+              href="/monitoring/maps/wallboard"
+            >
+              نمایش تمام صفحه
+            </Link>
           </div>
 
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-300">
