@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         if (!BACKEND_URL) {
             return NextResponse.json(
                 { message: "LARAVEL_API_BASE_URL تنظیم نشده است." },
-                { status: 500 }
+                { status: 500 },
             );
         }
 
@@ -21,17 +21,17 @@ export async function POST(req: NextRequest) {
             cookieStore.get("access_token")?.value ||
             cookieStore.get("jwt")?.value;
 
-        const backendHeaders: HeadersInit = {
+        const headers: HeadersInit = {
             Accept: "application/json",
         };
 
         if (token) {
-            backendHeaders.Authorization = `Bearer ${token}`;
+            headers.Authorization = `Bearer ${token}`;
         }
 
         const response = await fetch(`${BACKEND_URL}${SHELTER_REQUESTS_PATH}`, {
             method: "POST",
-            headers: backendHeaders,
+            headers,
             body: formData,
             cache: "no-store",
         });
@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
         const text = await response.text();
 
         let data: unknown = null;
+
         try {
             data = text ? JSON.parse(text) : null;
         } catch {
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
     } catch {
         return NextResponse.json(
             { message: "خطا در پروکسی درخواست اسکان" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

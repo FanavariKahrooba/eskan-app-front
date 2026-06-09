@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 
 type RequestType = "male" | "female" | "family";
-type ShelterRequestKind = "temporary" | "emergency" | "family" | "referral";
 
 type FormDataState = {
   firstName: string;
@@ -103,11 +102,6 @@ function mapApplicantType(type: RequestType) {
   if (type === "male") return "men";
   if (type === "female") return "women";
   return "family";
-}
-
-function getRequestType(type: RequestType): ShelterRequestKind {
-  if (type === "family") return "family";
-  return "temporary";
 }
 
 function cn(...classes: Array<string | false | null | undefined>) {
@@ -616,7 +610,7 @@ export default function ShelterRequestPage() {
       form.append("elderly_count", formData.hasElderly ? "1" : "0");
       form.append("disabled_count", formData.hasDisability ? "1" : "0");
 
-      form.append("request_type", getRequestType(requestType));
+      form.append("request_type", "temporary");
       form.append(
         "requested_from",
         formatGregorianDateOnly(requestedFrom.toDate()),
@@ -696,8 +690,6 @@ export default function ShelterRequestPage() {
               backendErrors.nationalCardFile = message;
             else if (key === "meta.current_status")
               backendErrors.currentStatus = message;
-            else if (key === "request_type" && !backendErrors.general)
-              backendErrors.general = message;
             else if (!backendErrors.general) backendErrors.general = message;
           }
 
@@ -1109,6 +1101,7 @@ export default function ShelterRequestPage() {
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
               <div className="mb-2 flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                {/* <Wheelchair className="h-4 w-4 text-indigo-500" /> */}
                 <span className="text-sm font-medium">دسترسی‌پذیری</span>
               </div>
               <p className="text-sm text-slate-500 dark:text-slate-400">
